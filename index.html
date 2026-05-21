@@ -5,23 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EU Project Manager</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --eu:#003399;--eu-d:#001f6e;--gold:#FFCC00;--gold-d:#cc9900;
-  --border:#C5CEDF;--bg:#f5f7fc;--card:#fff;--text:#1a2340;--muted:#5a6a8a;
-  --success:#1a6b3c;--warn:#8a5a00;--danger:#7a1a1a;
-  --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;
-  --r:4px;
-}
+:root{--eu:#003399;--eu-d:#001f6e;--gold:#FFCC00;--gold-d:#cc9900;--border:#C5CEDF;--bg:#f5f7fc;--card:#fff;--text:#1a2340;--muted:#5a6a8a;--font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--r:4px;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;display:flex;flex-direction:column}
 .topbar{background:var(--eu);color:#fff;padding:0 16px;display:flex;align-items:center;gap:12px;height:48px;border-bottom:3px solid var(--gold);flex-shrink:0}
 .eu-stars{display:flex;gap:2px;flex-wrap:wrap;width:22px}
 .eu-stars span{color:var(--gold);font-size:7px;line-height:8px}
 .topbar-title{font-size:14px;font-weight:600;letter-spacing:.02em}
-.project-switcher{margin-left:auto;display:flex;align-items:center;gap:6px}
+.sync-badge{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;opacity:.8}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#4caf50}
+.sync-dot.syncing{background:var(--gold);animation:pulse 1s infinite}
+.sync-dot.error{background:#f44336}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.project-switcher{display:flex;align-items:center;gap:6px;margin-left:12px}
 .project-switcher select{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:var(--r);padding:4px 8px;font-family:var(--font);font-size:12px;cursor:pointer}
 .project-switcher select option{background:#003399;color:#fff}
 .btn-new-proj{background:var(--gold);color:var(--eu);border:none;border-radius:var(--r);padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer}
@@ -112,6 +111,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .tab{padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--eu);border-bottom-color:var(--eu)}
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;gap:12px}
+.loading-spinner{width:32px;height:32px;border:3px solid #e8ecf5;border-top-color:var(--eu);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#c0cce0;border-radius:3px}
@@ -119,9 +121,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 </head>
 <body>
 
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div style="font-size:13px;color:var(--muted)">Connessione al database condiviso...</div>
+</div>
+
 <div class="topbar">
   <div class="eu-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
   <div class="topbar-title">EU Project Manager</div>
+  <div class="sync-badge">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">connesso</span>
+  </div>
   <div class="project-switcher">
     <span style="font-size:11px;opacity:.6">Progetto:</span>
     <select id="project-select" onchange="switchProject(this.value)"></select>
@@ -161,7 +172,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 <div class="page" id="page-partners">
   <div class="page-title">Database Partner</div>
   <div class="section-row">
-    <span style="font-size:12px;color:var(--muted)">Riusabili in più progetti</span>
+    <span style="font-size:12px;color:var(--muted)">Condiviso con tutto il team</span>
     <button class="btn btn-primary btn-sm" onclick="openModal('modal-new-partner')"><i class="ti ti-plus"></i> Aggiungi partner</button>
   </div>
   <div class="partner-grid" id="partner-grid"></div>
@@ -245,7 +256,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
       <button class="btn btn-gold btn-sm" onclick="askAI('Scrivi la descrizione completa per WP2 Urban Data Analysis per un progetto EUI Urban 2.4M€ con partner accademici e municipalità.')">📋 Genera WP</button>
       <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera una tabella di person months realistici per un progetto Horizon Europe 36 mesi, 2.4M€, 8 partner.')">📊 Calcola PM</button>
       <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Scrivi la sezione Impact per un progetto EUI Urban Innovation, focus su trasformazione urbana, cittadini, scalabilità. 200 parole.')">🎯 Impact</button>
-      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera risk matrix con 6 rischi tipici per un progetto europeo urbano multi-partner: tipo, probabilità, impatto, WP, mitigazione.')">⚠ Risk matrix</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera risk matrix con 6 rischi tipici per un progetto europeo urbano multi-partner.')">⚠ Risk matrix</button>
       <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera 5 milestones e 10 deliverables per progetto urbano europeo 36 mesi. Formato tabella.')">🏁 Milestones</button>
     </div>
     <div style="display:flex;gap:7px">
@@ -257,222 +268,179 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   </div>
   <div class="card"><div class="card-header"><span class="card-title">Template sezioni standard</span></div>
   <div class="card-body"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
-    <button class="btn btn-sm" style="justify-content:flex-start" onclick="askAI('Excellence statement 150 parole per progetto EUI Urban Innovation.')">Excellence statement</button>
-    <button class="btn btn-sm" style="justify-content:flex-start" onclick="askAI('Description of action WP1 Project Management Horizon Europe con tasks T1.1-T1.3.')">Description of action WP</button>
-    <button class="btn btn-sm" style="justify-content:flex-start" onclick="askAI('Ethics and data protection per progetto urbano che raccoglie dati cittadini. Formato Horizon Europe.')">Ethics section</button>
-    <button class="btn btn-sm" style="justify-content:flex-start" onclick="askAI('5 KPIs quantitativi per impatto progetto innovazione urbana EUI con baseline e target.')">KPIs e indicatori</button>
-    <button class="btn btn-sm" style="justify-content:flex-start" onclick="askAI('Exploitation plan sintetico per progetto innovazione urbana europea.')">Exploitation plan</button>
-    <button class="btn btn-sm" style="justify-content:flex-start" onclick="askAI('Gantt narrativo 36 mesi per progetto EUI Urban con descrizione logica dipendenze tra WP.')">Narrative Gantt</button>
+    <button class="btn btn-sm" onclick="askAI('Excellence statement 150 parole per progetto EUI Urban Innovation.')">Excellence statement</button>
+    <button class="btn btn-sm" onclick="askAI('Description of action WP1 Project Management Horizon Europe con tasks T1.1-T1.3.')">Description of action WP</button>
+    <button class="btn btn-sm" onclick="askAI('Ethics and data protection per progetto urbano. Formato Horizon Europe.')">Ethics section</button>
+    <button class="btn btn-sm" onclick="askAI('5 KPIs quantitativi per impatto progetto innovazione urbana EUI.')">KPIs e indicatori</button>
+    <button class="btn btn-sm" onclick="askAI('Exploitation plan sintetico per progetto innovazione urbana europea.')">Exploitation plan</button>
+    <button class="btn btn-sm" onclick="askAI('Gantt narrativo 36 mesi per progetto EUI Urban con dipendenze tra WP.')">Narrative Gantt</button>
   </div></div></div>
 </div>
 
 <div class="page" id="page-export">
   <div class="page-title">Esporta — template CE & EUI</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="card" style="cursor:pointer" onclick="alert('Vai nella sezione Assistente AI e chiedi: genera il testo completo della tabella WP nel formato Horizon Europe Part B')">
-      <div class="card-body"><div style="font-size:20px;margin-bottom:6px">📄</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Annex 1 — Description of Action</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Part B Horizon Europe completa</div></div>
-    </div>
-    <div class="card" style="cursor:pointer" onclick="alert('Vai nella sezione Assistente AI e chiedi: esporta tabella budget formato EC con categorie A-D')">
-      <div class="card-body"><div style="font-size:20px;margin-bottom:6px">💶</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Financial tables (EC format)</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Budget per partner, WP e categoria</div></div>
-    </div>
-    <div class="card" style="cursor:pointer" onclick="alert('Vai nella sezione Assistente AI e chiedi: genera Gantt testuale con WP, milestones e deliverables su 36 mesi')">
-      <div class="card-body"><div style="font-size:20px;margin-bottom:6px">📅</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Gantt chart (testo / CSV)</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Copiabile in Word o Excel</div></div>
-    </div>
-    <div class="card" style="cursor:pointer" onclick="alert('Vai nella sezione Assistente AI e chiedi: tabella deliverables formato Horizon Europe con tutti i campi CE')">
-      <div class="card-body"><div style="font-size:20px;margin-bottom:6px">📦</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Lista deliverables (CE template)</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Tutti i campi obbligatori CE</div></div>
-    </div>
+    <div class="card" style="cursor:pointer" onclick="askAI('Genera testo completo tabella WP formato Horizon Europe Part B.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📄</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Annex 1 — Description of Action</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Vai all'Assistente AI per generare il testo</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="askAI('Esporta tabella budget formato EC con categorie A-D per partner e WP.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">💶</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Financial tables (EC format)</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Budget per partner, WP e categoria</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="askAI('Genera Gantt testuale con WP, milestones e deliverables su 36 mesi.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📅</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Gantt chart (testo / CSV)</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Copiabile in Word o Excel</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="askAI('Tabella deliverables formato Horizon Europe con tutti i campi CE obbligatori.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📦</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Lista deliverables (CE template)</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Tutti i campi obbligatori CE</div></div></div>
   </div>
 </div>
 
-</div><!-- /main -->
-</div><!-- /layout -->
+</div></div>
 
 <!-- MODALS -->
 <div class="modal-overlay" id="modal-new-project" style="display:none">
 <div class="modal">
   <div class="modal-header"><span class="modal-title"><i class="ti ti-folder-plus"></i> Nuovo progetto</span><button class="btn btn-sm" onclick="closeModal('modal-new-project')"><i class="ti ti-x"></i></button></div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group" style="grid-column:1/-1"><label>Acronimo / Nome breve</label><input id="np-name" placeholder="es. URBAN-NEXUS"></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Titolo completo</label><input id="np-title" placeholder="es. Urban Networks for Equitable Sustainability"></div>
-      <div class="form-group"><label>Bando / Call</label><select id="np-call"><option>Horizon Europe</option><option>EUI Urban Innovation</option><option>LIFE</option><option>Interreg</option><option>ERDF</option><option>Altro</option></select></div>
-      <div class="form-group"><label>Topic / Reference</label><input id="np-topic" placeholder="es. HORIZON-MISS-2024-NEB-01"></div>
-      <div class="form-group"><label>Durata (mesi)</label><input id="np-months" type="number" value="36"></div>
-      <div class="form-group"><label>Budget totale (€)</label><input id="np-budget" type="number" placeholder="2400000"></div>
-      <div class="form-group"><label>Coordinatore</label><input id="np-coord" placeholder="es. Politecnico di Milano"></div>
-      <div class="form-group"><label>Stato</label><select id="np-status"><option>In preparazione</option><option>Sottomesso</option><option>In valutazione</option><option>Approvato</option><option>In esecuzione</option><option>Concluso</option></select></div>
-    </div>
-  </div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group" style="grid-column:1/-1"><label>Acronimo</label><input id="np-name" placeholder="es. URBAN-NEXUS"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Titolo completo</label><input id="np-title" placeholder="es. Urban Networks for Equitable Sustainability"></div>
+    <div class="form-group"><label>Bando / Call</label><select id="np-call"><option>Horizon Europe</option><option>EUI Urban Innovation</option><option>LIFE</option><option>Interreg</option><option>ERDF</option><option>Altro</option></select></div>
+    <div class="form-group"><label>Topic</label><input id="np-topic" placeholder="es. HORIZON-MISS-2024-NEB-01"></div>
+    <div class="form-group"><label>Durata (mesi)</label><input id="np-months" type="number" value="36"></div>
+    <div class="form-group"><label>Budget totale (€)</label><input id="np-budget" type="number" placeholder="2400000"></div>
+    <div class="form-group"><label>Coordinatore</label><input id="np-coord" placeholder="es. Politecnico di Milano"></div>
+    <div class="form-group"><label>Stato</label><select id="np-status"><option>In preparazione</option><option>Sottomesso</option><option>In valutazione</option><option>Approvato</option><option>In esecuzione</option><option>Concluso</option></select></div>
+  </div></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-project')">Annulla</button><button class="btn btn-primary" onclick="saveNewProject()"><i class="ti ti-check"></i> Crea progetto</button></div>
 </div></div>
 
 <div class="modal-overlay" id="modal-new-partner" style="display:none">
 <div class="modal">
   <div class="modal-header"><span class="modal-title"><i class="ti ti-building-plus"></i> Nuovo partner</span><button class="btn btn-sm" onclick="closeModal('modal-new-partner')"><i class="ti ti-x"></i></button></div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group" style="grid-column:1/-1"><label>Nome istituzione</label><input id="pp-name" placeholder="es. Politecnico di Milano"></div>
-      <div class="form-group"><label>Acronimo</label><input id="pp-acronym" placeholder="es. PoliMI"></div>
-      <div class="form-group"><label>Paese</label><input id="pp-country" placeholder="es. Italia"></div>
-      <div class="form-group"><label>Tipo</label><select id="pp-type"><option>Università / Centro ricerca</option><option>Comune / Autorità pubblica</option><option>PMI</option><option>Grande impresa</option><option>ONG / Associazione</option><option>Fondazione</option><option>Altro</option></select></div>
-      <div class="form-group"><label>Ruolo nel consorzio</label><select id="pp-role"><option>Coordinatore</option><option>Partner</option><option>Associato</option><option>Subcontractor</option></select></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Sito web</label><input id="pp-web" placeholder="https://..."></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Note / Expertise</label><textarea id="pp-notes" placeholder="Settori di competenza, precedenti progetti europei..."></textarea></div>
-    </div>
-  </div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group" style="grid-column:1/-1"><label>Nome istituzione</label><input id="pp-name" placeholder="es. Politecnico di Milano"></div>
+    <div class="form-group"><label>Acronimo</label><input id="pp-acronym" placeholder="es. PoliMI"></div>
+    <div class="form-group"><label>Paese</label><input id="pp-country" placeholder="es. Italia"></div>
+    <div class="form-group"><label>Tipo</label><select id="pp-type"><option>Università / Centro ricerca</option><option>Comune / Autorità pubblica</option><option>PMI</option><option>Grande impresa</option><option>ONG / Associazione</option><option>Fondazione</option><option>Altro</option></select></div>
+    <div class="form-group"><label>Ruolo</label><select id="pp-role"><option>Coordinatore</option><option>Partner</option><option>Associato</option><option>Subcontractor</option></select></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Sito web</label><input id="pp-web" placeholder="https://..."></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Note / Expertise</label><textarea id="pp-notes" placeholder="Settori di competenza, precedenti progetti europei..."></textarea></div>
+  </div></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-partner')">Annulla</button><button class="btn btn-primary" onclick="saveNewPartner()"><i class="ti ti-check"></i> Salva partner</button></div>
 </div></div>
 
 <div class="modal-overlay" id="modal-new-contact" style="display:none">
 <div class="modal">
   <div class="modal-header"><span class="modal-title"><i class="ti ti-user-plus"></i> Nuovo contatto</span><button class="btn btn-sm" onclick="closeModal('modal-new-contact')"><i class="ti ti-x"></i></button></div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group"><label>Nome</label><input id="nc-firstname" placeholder="Nome"></div>
-      <div class="form-group"><label>Cognome</label><input id="nc-lastname" placeholder="Cognome"></div>
-      <div class="form-group"><label>Partner</label><select id="nc-partner"></select></div>
-      <div class="form-group"><label>Ruolo nel progetto</label><input id="nc-role" placeholder="es. WP leader, PI, Project Manager"></div>
-      <div class="form-group"><label>Email</label><input id="nc-email" type="email" placeholder="nome@istituzione.eu"></div>
-      <div class="form-group"><label>Telefono</label><input id="nc-phone" placeholder="+39..."></div>
-      <div class="form-group" style="grid-column:1/-1"><label>ORCID / LinkedIn</label><input id="nc-orcid" placeholder="https://orcid.org/..."></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Note</label><textarea id="nc-notes" placeholder="Expertise, disponibilità, note..."></textarea></div>
-    </div>
-  </div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group"><label>Nome</label><input id="nc-firstname" placeholder="Nome"></div>
+    <div class="form-group"><label>Cognome</label><input id="nc-lastname" placeholder="Cognome"></div>
+    <div class="form-group"><label>Partner</label><select id="nc-partner"></select></div>
+    <div class="form-group"><label>Ruolo nel progetto</label><input id="nc-role" placeholder="es. WP leader, PI, PM"></div>
+    <div class="form-group"><label>Email</label><input id="nc-email" type="email" placeholder="nome@istituzione.eu"></div>
+    <div class="form-group"><label>Telefono</label><input id="nc-phone" placeholder="+39..."></div>
+    <div class="form-group" style="grid-column:1/-1"><label>ORCID / LinkedIn</label><input id="nc-orcid" placeholder="https://orcid.org/..."></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Note</label><textarea id="nc-notes" placeholder="Expertise, disponibilità..."></textarea></div>
+  </div></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-contact')">Annulla</button><button class="btn btn-primary" onclick="saveNewContact()"><i class="ti ti-check"></i> Salva contatto</button></div>
 </div></div>
 
 <div class="modal-overlay" id="modal-new-wp" style="display:none">
 <div class="modal">
   <div class="modal-header"><span class="modal-title"><i class="ti ti-folder-plus"></i> Nuovo Work Package</span><button class="btn btn-sm" onclick="closeModal('modal-new-wp')"><i class="ti ti-x"></i></button></div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group"><label>Numero WP</label><input id="wp-num" placeholder="es. WP1"></div>
-      <div class="form-group"><label>Titolo</label><input id="wp-title" placeholder="es. Coordination & Management"></div>
-      <div class="form-group"><label>Tipo</label><select id="wp-type"><option>MGT</option><option>RTD</option><option>DEMO</option><option>COMM</option><option>OTHER</option></select></div>
-      <div class="form-group"><label>Partner lead</label><select id="wp-lead"></select></div>
-      <div class="form-group"><label>Mese inizio</label><input id="wp-start" type="number" placeholder="1" min="1"></div>
-      <div class="form-group"><label>Mese fine</label><input id="wp-end" type="number" placeholder="36" min="1"></div>
-      <div class="form-group"><label>Person months totali</label><input id="wp-pm" type="number" placeholder="48"></div>
-      <div class="form-group"><label>Budget (€)</label><input id="wp-budget" type="number" placeholder="320000"></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Obiettivi</label><textarea id="wp-obj" placeholder="Obiettivi principali del WP..."></textarea></div>
-    </div>
-  </div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group"><label>Numero WP</label><input id="wp-num" placeholder="es. WP1"></div>
+    <div class="form-group"><label>Titolo</label><input id="wp-title" placeholder="es. Coordination & Management"></div>
+    <div class="form-group"><label>Tipo</label><select id="wp-type"><option>MGT</option><option>RTD</option><option>DEMO</option><option>COMM</option><option>OTHER</option></select></div>
+    <div class="form-group"><label>Partner lead</label><select id="wp-lead"></select></div>
+    <div class="form-group"><label>Mese inizio</label><input id="wp-start" type="number" placeholder="1" min="1"></div>
+    <div class="form-group"><label>Mese fine</label><input id="wp-end" type="number" placeholder="36" min="1"></div>
+    <div class="form-group"><label>Person months</label><input id="wp-pm" type="number" placeholder="48"></div>
+    <div class="form-group"><label>Budget (€)</label><input id="wp-budget" type="number" placeholder="320000"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Obiettivi</label><textarea id="wp-obj" placeholder="Obiettivi principali..."></textarea></div>
+  </div></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-wp')">Annulla</button><button class="btn btn-primary" onclick="saveNewWP()"><i class="ti ti-check"></i> Salva WP</button></div>
 </div></div>
 
 <div class="modal-overlay" id="modal-new-task" style="display:none">
 <div class="modal">
   <div class="modal-header"><span class="modal-title"><i class="ti ti-checkbox"></i> Nuovo Task</span><button class="btn btn-sm" onclick="closeModal('modal-new-task')"><i class="ti ti-x"></i></button></div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group"><label>ID task (es. T2.1)</label><input id="tk-id" placeholder="T2.1"></div>
-      <div class="form-group"><label>Titolo</label><input id="tk-title" placeholder="es. Urban data collection"></div>
-      <div class="form-group"><label>WP di riferimento</label><select id="tk-wp"></select></div>
-      <div class="form-group"><label>Partner responsabile</label><select id="tk-lead"></select></div>
-      <div class="form-group"><label>Person months</label><input id="tk-pm" type="number" placeholder="12"></div>
-      <div class="form-group"><label>Stato</label><select id="tk-status"><option>nuovo</option><option>in corso</option><option>completato</option><option>a rischio</option><option>in ritardo</option></select></div>
-      <div class="form-group"><label>Mese inizio</label><input id="tk-start" type="number" placeholder="1"></div>
-      <div class="form-group"><label>Mese fine</label><input id="tk-end" type="number" placeholder="12"></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Deliverable collegato</label><input id="tk-del" placeholder="es. D2.1"></div>
-    </div>
-  </div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group"><label>ID task</label><input id="tk-id" placeholder="T2.1"></div>
+    <div class="form-group"><label>Titolo</label><input id="tk-title" placeholder="es. Urban data collection"></div>
+    <div class="form-group"><label>WP</label><select id="tk-wp"></select></div>
+    <div class="form-group"><label>Partner responsabile</label><select id="tk-lead"></select></div>
+    <div class="form-group"><label>Person months</label><input id="tk-pm" type="number" placeholder="12"></div>
+    <div class="form-group"><label>Stato</label><select id="tk-status"><option>nuovo</option><option>in corso</option><option>completato</option><option>a rischio</option><option>in ritardo</option></select></div>
+    <div class="form-group"><label>Mese inizio</label><input id="tk-start" type="number" placeholder="1"></div>
+    <div class="form-group"><label>Mese fine</label><input id="tk-end" type="number" placeholder="12"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Deliverable collegato</label><input id="tk-del" placeholder="es. D2.1"></div>
+  </div></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-task')">Annulla</button><button class="btn btn-primary" onclick="saveNewTask()"><i class="ti ti-check"></i> Salva task</button></div>
 </div></div>
 
 <div class="modal-overlay" id="modal-new-ms" style="display:none">
 <div class="modal">
   <div class="modal-header"><span class="modal-title"><i class="ti ti-flag"></i> Nuova Milestone</span><button class="btn btn-sm" onclick="closeModal('modal-new-ms')"><i class="ti ti-x"></i></button></div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group"><label>ID (es. MS1)</label><input id="ms-id" placeholder="MS1"></div>
-      <div class="form-group"><label>Titolo</label><input id="ms-title" placeholder="es. Kick-off completato"></div>
-      <div class="form-group"><label>WP</label><select id="ms-wp"></select></div>
-      <div class="form-group"><label>Mese</label><input id="ms-month" type="number" placeholder="6"></div>
-      <div class="form-group" style="grid-column:1/-1"><label>Mezzo di verifica</label><input id="ms-verify" placeholder="es. Meeting minutes, Report approvato..."></div>
-      <div class="form-group"><label>Stato</label><select id="ms-status"><option>—</option><option>on track</option><option>at risk</option><option>completata</option><option>in ritardo</option></select></div>
-    </div>
-  </div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group"><label>ID</label><input id="ms-id" placeholder="MS1"></div>
+    <div class="form-group"><label>Titolo</label><input id="ms-title" placeholder="es. Kick-off completato"></div>
+    <div class="form-group"><label>WP</label><select id="ms-wp"></select></div>
+    <div class="form-group"><label>Mese</label><input id="ms-month" type="number" placeholder="6"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Mezzo di verifica</label><input id="ms-verify" placeholder="es. Meeting minutes, Report approvato..."></div>
+    <div class="form-group"><label>Stato</label><select id="ms-status"><option>—</option><option>on track</option><option>at risk</option><option>completata</option><option>in ritardo</option></select></div>
+  </div></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-ms')">Annulla</button><button class="btn btn-primary" onclick="saveNewMS()"><i class="ti ti-check"></i> Salva milestone</button></div>
 </div></div>
 
 <div class="modal-overlay" id="modal-new-del" style="display:none">
 <div class="modal">
   <div class="modal-header"><span class="modal-title"><i class="ti ti-file-text"></i> Nuovo Deliverable</span><button class="btn btn-sm" onclick="closeModal('modal-new-del')"><i class="ti ti-x"></i></button></div>
-  <div class="modal-body">
-    <div class="form-grid">
-      <div class="form-group"><label>ID (es. D2.1)</label><input id="del-id" placeholder="D2.1"></div>
-      <div class="form-group"><label>Titolo</label><input id="del-title" placeholder="es. Urban Data Report"></div>
-      <div class="form-group"><label>WP</label><select id="del-wp"></select></div>
-      <div class="form-group"><label>Task collegato</label><input id="del-task" placeholder="es. T2.1"></div>
-      <div class="form-group"><label>Mese consegna</label><input id="del-month" type="number" placeholder="12"></div>
-      <div class="form-group"><label>Tipo</label><select id="del-type"><option>R</option><option>DEM</option><option>OTHER</option><option>ETHICS</option></select></div>
-      <div class="form-group"><label>Disseminazione</label><select id="del-dissem"><option>PU</option><option>CO</option><option>CI</option></select></div>
-      <div class="form-group"><label>Stato</label><select id="del-status"><option>—</option><option>on track</option><option>at risk</option><option>consegnato</option><option>in ritardo</option></select></div>
-    </div>
-  </div>
+  <div class="modal-body"><div class="form-grid">
+    <div class="form-group"><label>ID</label><input id="del-id" placeholder="D2.1"></div>
+    <div class="form-group"><label>Titolo</label><input id="del-title" placeholder="es. Urban Data Report"></div>
+    <div class="form-group"><label>WP</label><select id="del-wp"></select></div>
+    <div class="form-group"><label>Task collegato</label><input id="del-task" placeholder="es. T2.1"></div>
+    <div class="form-group"><label>Mese consegna</label><input id="del-month" type="number" placeholder="12"></div>
+    <div class="form-group"><label>Tipo</label><select id="del-type"><option>R</option><option>DEM</option><option>OTHER</option><option>ETHICS</option></select></div>
+    <div class="form-group"><label>Disseminazione</label><select id="del-dissem"><option>PU</option><option>CO</option><option>CI</option></select></div>
+    <div class="form-group"><label>Stato</label><select id="del-status"><option>—</option><option>on track</option><option>at risk</option><option>consegnato</option><option>in ritardo</option></select></div>
+  </div></div>
   <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-del')">Annulla</button><button class="btn btn-primary" onclick="saveNewDel()"><i class="ti ti-check"></i> Salva deliverable</button></div>
 </div></div>
 
 <script>
+const SUPABASE_URL = 'https://yvrwgdthmecocgvfmwsq.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const COLORS=['#003399','#E63946','#2A9D8F','#E9C46A','#6B4EAE','#F4845F','#1D7874','#DC143C'];
 const COLORS_BG=['#dce8ff','#fde8e9','#dff5f2','#fff8e0','#efe8ff','#fef0ea','#e0f5f4','#fde8ec'];
 const COLORS_TXT=['#1a3a8a','#7a1a1e','#0f4a3c','#7a5a00','#3a1a7a','#7a3010','#0a4040','#7a0010'];
 
-let state={projects:[],partners:[],contacts:[],currentProjectId:null};
+let projects=[], partners=[], contacts=[], wps=[], tasks=[], milestones=[], deliverables=[], projectPartners=[];
+let currentProjectId=null;
+
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function currentProject(){return state.projects.find(p=>p.id===state.currentProjectId)||null;}
+function currentProject(){return projects.find(p=>p.id===currentProjectId)||null;}
+function setSync(state){
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
+  dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');
+  lbl.textContent=state==='syncing'?'salvataggio...':state==='error'?'errore connessione':'connesso';
+}
 
-function saveState(){try{localStorage.setItem('eu-pm-v2',JSON.stringify(state));}catch(e){}}
-function loadState(){try{const r=localStorage.getItem('eu-pm-v2');if(r)state=JSON.parse(r);}catch(e){}}
-
-function init(){
-  loadState();
-  if(!state.partners.length){
-    state.partners=[
-      {id:uid(),name:'Politecnico di Milano',acronym:'PoliMI',country:'Italia',type:'Università / Centro ricerca',role:'Coordinatore',web:'https://www.polimi.it',notes:'Leader in urban design e spatial planning'},
-      {id:uid(),name:'TU Delft',acronym:'TU Delft',country:'Paesi Bassi',type:'Università / Centro ricerca',role:'Partner',web:'https://www.tudelft.nl',notes:'Expertise in urban data e smart cities'},
-      {id:uid(),name:'Comune di Milano',acronym:'Comune MI',country:'Italia',type:'Comune / Autorità pubblica',role:'Partner',web:'https://www.comune.milano.it',notes:'Città pilota EUI'},
-      {id:uid(),name:'Urban Lab Torino',acronym:'Urban Lab',country:'Italia',type:'Fondazione',role:'Partner',web:'',notes:'Co-design e partecipazione'},
-    ];
-  }
-  if(!state.contacts.length){
-    state.contacts=[
-      {id:uid(),firstname:'Maria',lastname:'Rossi',partnerId:state.partners[0]?.id||'',role:'Project Coordinator / WP1 leader',email:'m.rossi@polimi.it',phone:'+39 02 2399 0001',orcid:'',notes:'PI del progetto'},
-      {id:uid(),firstname:'Jan',lastname:'van der Berg',partnerId:state.partners[1]?.id||'',role:'WP2 leader',email:'j.vanderberg@tudelft.nl',phone:'+31 15 278 0000',orcid:'https://orcid.org/0000-0001-0000-0001',notes:'Urban data analytics'},
-      {id:uid(),firstname:'Laura',lastname:'Bianchi',partnerId:state.partners[2]?.id||'',role:'City representative',email:'l.bianchi@comune.milano.it',phone:'+39 02 884 0000',orcid:'',notes:'Referente Comune Milano'},
-    ];
-  }
-  if(!state.projects.length){
-    const pid=uid();
-    state.projects=[{id:pid,name:'URBAN-NEXUS',title:'Urban Networks for Equitable Sustainability',call:'EUI Urban Innovation',topic:'EUI-2-2024-URBINNO',months:36,budget:2400000,coordinator:'PoliMI',status:'In preparazione',
-      wps:[
-        {id:uid(),num:'WP1',title:'Coordination & Management',type:'MGT',lead:'PoliMI',start:1,end:36,pm:48,budget:320000,obj:'Gestione efficace del consorzio'},
-        {id:uid(),num:'WP2',title:'Urban Data & Analysis',type:'RTD',lead:'TU Delft',start:2,end:24,pm:72,budget:580000,obj:'Raccolta e analisi dati urbani'},
-        {id:uid(),num:'WP3',title:'Co-design & Participation',type:'RTD',lead:'Comune MI',start:6,end:30,pm:60,budget:480000,obj:'Processi partecipativi con cittadini'},
-        {id:uid(),num:'WP4',title:'Pilot Implementation',type:'DEMO',lead:'Urban Lab',start:12,end:36,pm:96,budget:780000,obj:'Implementazione pilota urbano'},
-        {id:uid(),num:'WP5',title:'Dissemination & Exploitation',type:'COMM',lead:'PoliMI',start:1,end:36,pm:36,budget:240000,obj:'Comunicazione e valorizzazione risultati'},
-      ],
-      tasks:[
-        {id:uid(),taskId:'T1.1',title:'Project handbook & procedures',wpId:'WP1',lead:'PoliMI',pm:6,start:1,end:3,deliverable:'D1.1',status:'completato'},
-        {id:uid(),taskId:'T2.1',title:'Urban data collection framework',wpId:'WP2',lead:'TU Delft',pm:18,start:2,end:12,deliverable:'D2.1',status:'in corso'},
-        {id:uid(),taskId:'T3.1',title:'Stakeholder mapping',wpId:'WP3',lead:'Comune MI',pm:8,start:6,end:10,deliverable:'D3.1',status:'a rischio'},
-        {id:uid(),taskId:'T4.1',title:'Pilot site preparation',wpId:'WP4',lead:'Urban Lab',pm:20,start:12,end:20,deliverable:'',status:'nuovo'},
-      ],
-      milestones:[
-        {id:uid(),msId:'MS1',title:'Kick-off completato',wpId:'WP1',month:1,verify:'Meeting minutes',status:'completata'},
-        {id:uid(),msId:'MS2',title:'Data framework ready',wpId:'WP2',month:12,verify:'Report approvato',status:'on track'},
-        {id:uid(),msId:'MS3',title:'Pilot site selected',wpId:'WP4',month:18,verify:'Decision document',status:'at risk'},
-      ],
-      deliverables:[
-        {id:uid(),delId:'D1.1',title:'Project Handbook',wpId:'WP1',taskId:'T1.1',month:3,type:'R',dissem:'PU',status:'consegnato'},
-        {id:uid(),delId:'D2.1',title:'Urban Data Report',wpId:'WP2',taskId:'T2.1',month:12,type:'R',dissem:'PU',status:'on track'},
-        {id:uid(),delId:'D3.1',title:'Co-design Methodology',wpId:'WP3',taskId:'T3.1',month:14,type:'R',dissem:'PU',status:'at risk'},
-      ],
-      partnerIds:state.partners.map(p=>p.id)
-    }];
-    state.currentProjectId=pid;
-  }
-  if(!state.currentProjectId&&state.projects.length)state.currentProjectId=state.projects[0].id;
+async function loadAll(){
+  try{
+    const [pr,pa,co,wp,tk,ms,dl,pp]=await Promise.all([
+      sb.from('projects').select('*').order('created_at'),
+      sb.from('partners').select('*').order('created_at'),
+      sb.from('contacts').select('*').order('created_at'),
+      sb.from('work_packages').select('*').order('created_at'),
+      sb.from('tasks').select('*').order('created_at'),
+      sb.from('milestones').select('*').order('created_at'),
+      sb.from('deliverables').select('*').order('created_at'),
+      sb.from('project_partners').select('*'),
+    ]);
+    projects=pr.data||[]; partners=pa.data||[]; contacts=co.data||[];
+    wps=wp.data||[]; tasks=tk.data||[]; milestones=ms.data||[];
+    deliverables=dl.data||[]; projectPartners=pp.data||[];
+    if(!currentProjectId && projects.length) currentProjectId=projects[0].id;
+    setSync('ok');
+  }catch(e){setSync('error');console.error(e);}
+  document.getElementById('loading-overlay').style.display='none';
   renderAll();
 }
 
@@ -491,37 +459,50 @@ function switchTab(tab){
 }
 function openModal(id){
   const proj=currentProject();
-  document.querySelectorAll('#modal-new-contact #nc-partner').forEach(sel=>{sel.innerHTML=state.partners.map(p=>`<option value="${p.id}">${p.acronym||p.name}</option>`).join('');});
-  ['#wp-lead','#tk-lead'].forEach(s=>{const el=document.querySelector(s);if(el)el.innerHTML=state.partners.map(p=>`<option value="${p.acronym||p.name}">${p.acronym||p.name}</option>`).join('');});
-  ['#tk-wp','#ms-wp','#del-wp'].forEach(s=>{const el=document.querySelector(s);if(el&&proj)el.innerHTML=(proj.wps||[]).map(w=>`<option value="${w.num}">${w.num} — ${w.title}</option>`).join('');});
+  const ncP=document.querySelector('#nc-partner');
+  if(ncP) ncP.innerHTML=partners.map(p=>`<option value="${p.id}">${p.acronym||p.name}</option>`).join('');
+  ['#wp-lead','#tk-lead'].forEach(s=>{const el=document.querySelector(s);if(el)el.innerHTML=partners.map(p=>`<option value="${p.acronym||p.name}">${p.acronym||p.name}</option>`).join('');});
+  const projWPs=wps.filter(w=>w.project_id===currentProjectId);
+  ['#tk-wp','#ms-wp','#del-wp'].forEach(s=>{const el=document.querySelector(s);if(el)el.innerHTML=projWPs.map(w=>`<option value="${w.num}">${w.num} — ${w.title}</option>`).join('');});
   document.getElementById(id).style.display='flex';
 }
 function closeModal(id){document.getElementById(id).style.display='none';}
 
-function renderProjectSelect(){const sel=document.getElementById('project-select');sel.innerHTML=state.projects.map(p=>`<option value="${p.id}"${p.id===state.currentProjectId?' selected':''}>${p.name}</option>`).join('');}
-function switchProject(id){state.currentProjectId=id;renderAll();}
+function renderProjectSelect(){
+  const sel=document.getElementById('project-select');
+  sel.innerHTML=projects.map(p=>`<option value="${p.id}"${p.id===currentProjectId?' selected':''}>${p.name}</option>`).join('');
+}
+function switchProject(id){currentProjectId=id;renderAll();}
 function renderProjectList(){
   const el=document.getElementById('project-list');
-  if(!state.projects.length){el.innerHTML='<div class="empty">Nessun progetto. Crea il primo!</div>';return;}
-  el.innerHTML=state.projects.map(p=>`<div class="project-item ${p.id===state.currentProjectId?'active-proj':''}" onclick="selectAndOpen('${p.id}')">
-    <div class="proj-name">${p.name}</div>
-    <div class="proj-call">${p.call||''} · ${p.months||36}M · €${Number(p.budget||0).toLocaleString('it')}</div>
-    <div class="proj-meta"><span class="tag">${p.status||'—'}</span><span class="tag">${(p.wps||[]).length} WP</span><span class="tag">${(p.partnerIds||[]).length} partner</span></div>
-    ${p.id===state.currentProjectId?'<div style="position:absolute;top:8px;right:8px;font-size:9px;background:var(--gold);color:var(--eu);padding:2px 5px;border-radius:2px;font-weight:700">ATTIVO</div>':''}
-  </div>`).join('');
+  if(!projects.length){el.innerHTML='<div class="empty">Nessun progetto. Crea il primo!</div>';return;}
+  el.innerHTML=projects.map(p=>{
+    const pWPs=wps.filter(w=>w.project_id===p.id);
+    const pParts=projectPartners.filter(pp=>pp.project_id===p.id);
+    return `<div class="project-item ${p.id===currentProjectId?'active-proj':''}" onclick="selectAndOpen('${p.id}')">
+      <div class="proj-name">${p.name}</div>
+      <div class="proj-call">${p.call||''} · ${p.months||36}M · €${Number(p.budget||0).toLocaleString('it')}</div>
+      <div class="proj-meta"><span class="tag">${p.status||'—'}</span><span class="tag">${pWPs.length} WP</span><span class="tag">${pParts.length} partner</span></div>
+      ${p.id===currentProjectId?'<div style="position:absolute;top:8px;right:8px;font-size:9px;background:var(--gold);color:var(--eu);padding:2px 5px;border-radius:2px;font-weight:700">ATTIVO</div>':''}
+    </div>`;
+  }).join('');
 }
-function selectAndOpen(id){state.currentProjectId=id;renderAll();showPage('dashboard');}
-function saveNewProject(){
-  const p={id:uid(),name:document.getElementById('np-name').value||'NUOVO-PROGETTO',title:document.getElementById('np-title').value||'',call:document.getElementById('np-call').value,topic:document.getElementById('np-topic').value,months:parseInt(document.getElementById('np-months').value)||36,budget:parseFloat(document.getElementById('np-budget').value)||0,coordinator:document.getElementById('np-coord').value,status:document.getElementById('np-status').value,wps:[],tasks:[],milestones:[],deliverables:[],partnerIds:state.partners.map(p=>p.id)};
-  state.projects.push(p);state.currentProjectId=p.id;closeModal('modal-new-project');saveState();renderAll();showPage('dashboard');
+function selectAndOpen(id){currentProjectId=id;renderAll();showPage('dashboard');}
+async function saveNewProject(){
+  const p={id:uid(),name:document.getElementById('np-name').value||'NUOVO',title:document.getElementById('np-title').value||'',call:document.getElementById('np-call').value,topic:document.getElementById('np-topic').value||'',months:parseInt(document.getElementById('np-months').value)||36,budget:parseFloat(document.getElementById('np-budget').value)||0,coordinator:document.getElementById('np-coord').value||'',status:document.getElementById('np-status').value};
+  setSync('syncing');
+  const {error}=await sb.from('projects').insert(p);
+  if(!error){projects.push(p);currentProjectId=p.id;}
+  setSync(error?'error':'ok');
+  closeModal('modal-new-project');renderAll();showPage('dashboard');
 }
 
 function getInitials(name){return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();}
 function pColor(i){const idx=i%COLORS.length;return{bg:COLORS_BG[idx],color:COLORS_TXT[idx]};}
 function renderPartners(){
   const el=document.getElementById('partner-grid');
-  if(!state.partners.length){el.innerHTML='<div class="empty">Nessun partner nel database</div>';return;}
-  el.innerHTML=state.partners.map((p,i)=>{const c=pColor(i);const cc=state.contacts.filter(x=>x.partnerId===p.id).length;const pc=state.projects.filter(pr=>(pr.partnerIds||[]).includes(p.id)).length;
+  if(!partners.length){el.innerHTML='<div class="empty">Nessun partner nel database</div>';return;}
+  el.innerHTML=partners.map((p,i)=>{const c=pColor(i);const cc=contacts.filter(x=>x.partner_id===p.id).length;const pc=projectPartners.filter(pp=>pp.partner_id===p.id).length;
     return `<div class="partner-card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="partner-initial" style="background:${c.bg};color:${c.color}">${getInitials(p.acronym||p.name)}</div><div><div class="partner-name">${p.acronym||p.name}</div><div class="partner-country">${p.country||'—'} · ${p.type||''}</div></div></div>
     <div><span class="badge" style="background:${c.bg};color:${c.color}">${p.role||'Partner'}</span></div>
     <div style="margin-top:6px;font-size:10px;color:var(--muted)">${pc} progetto${pc!==1?'i':''} · ${cc} contatto${cc!==1?'i':''}</div>
@@ -529,138 +510,154 @@ function renderPartners(){
     <div style="margin-top:8px;display:flex;gap:5px">${p.web?`<a href="${p.web}" target="_blank" class="btn btn-sm"><i class="ti ti-external-link"></i></a>`:''}<button class="btn btn-sm btn-danger" onclick="deletePartner('${p.id}')"><i class="ti ti-trash"></i></button></div>
     </div>`;}).join('');
 }
-function saveNewPartner(){
+async function saveNewPartner(){
   const p={id:uid(),name:document.getElementById('pp-name').value||'Partner',acronym:document.getElementById('pp-acronym').value||'',country:document.getElementById('pp-country').value||'',type:document.getElementById('pp-type').value,role:document.getElementById('pp-role').value,web:document.getElementById('pp-web').value||'',notes:document.getElementById('pp-notes').value||''};
-  state.partners.push(p);closeModal('modal-new-partner');saveState();renderAll();
+  setSync('syncing');
+  const {error}=await sb.from('partners').insert(p);
+  if(!error){partners.push(p);
+    if(currentProjectId){await sb.from('project_partners').insert({project_id:currentProjectId,partner_id:p.id});projectPartners.push({project_id:currentProjectId,partner_id:p.id});}
+  }
+  setSync(error?'error':'ok');
+  closeModal('modal-new-partner');renderAll();
 }
-function deletePartner(id){if(confirm('Eliminare questo partner?')){state.partners=state.partners.filter(p=>p.id!==id);saveState();renderPartners();}}
+async function deletePartner(id){if(!confirm('Eliminare questo partner?'))return;setSync('syncing');await sb.from('partners').delete().eq('id',id);partners=partners.filter(p=>p.id!==id);setSync('ok');renderPartners();}
 
 function renderContacts(){
   const search=(document.getElementById('contact-search')?.value||'').toLowerCase();
   const el=document.getElementById('contact-list');
-  let contacts=state.contacts.filter(c=>{if(!search)return true;const pt=state.partners.find(p=>p.id===c.partnerId);return(c.firstname+' '+c.lastname+' '+(c.role||'')+' '+(pt?.name||'')+' '+(pt?.acronym||'')).toLowerCase().includes(search);});
-  if(!contacts.length){el.innerHTML='<div class="empty">Nessun contatto trovato</div>';return;}
-  el.innerHTML=contacts.map((c,i)=>{const pt=state.partners.find(p=>p.id===c.partnerId);const col=pColor(i);
+  let list=contacts.filter(c=>{if(!search)return true;const pt=partners.find(p=>p.id===c.partner_id);return(c.firstname+' '+c.lastname+' '+(c.role||'')+' '+(pt?.name||'')+' '+(pt?.acronym||'')).toLowerCase().includes(search);});
+  if(!list.length){el.innerHTML='<div class="empty">Nessun contatto trovato</div>';return;}
+  el.innerHTML=list.map((c,i)=>{const pt=partners.find(p=>p.id===c.partner_id);const col=pColor(i);
     return `<div class="contact-card"><div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><div class="partner-initial" style="background:${col.bg};color:${col.color};width:34px;height:34px;font-size:12px">${c.firstname?c.firstname[0]:''}${c.lastname?c.lastname[0]:''}</div><div><div class="contact-name">${c.firstname} ${c.lastname}</div><div class="contact-role">${c.role||''}</div></div></div>
     ${pt?`<div style="margin-bottom:6px"><span class="badge badge-partner">${pt.acronym||pt.name}</span></div>`:''}
     <div class="contact-info">${c.email?`<div><i class="ti ti-mail" style="font-size:12px;margin-right:3px"></i><a href="mailto:${c.email}">${c.email}</a></div>`:''}${c.phone?`<div><i class="ti ti-phone" style="font-size:12px;margin-right:3px"></i>${c.phone}</div>`:''}${c.orcid?`<div><i class="ti ti-link" style="font-size:12px;margin-right:3px"></i><a href="${c.orcid}" target="_blank">ORCID</a></div>`:''}</div>
     ${c.notes?`<div style="margin-top:6px;font-size:10px;color:var(--muted);line-height:1.4">${c.notes.slice(0,80)}${c.notes.length>80?'…':''}</div>`:''}
     <div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="deleteContact('${c.id}')"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
 }
-function saveNewContact(){
-  const c={id:uid(),firstname:document.getElementById('nc-firstname').value||'',lastname:document.getElementById('nc-lastname').value||'',partnerId:document.getElementById('nc-partner').value||'',role:document.getElementById('nc-role').value||'',email:document.getElementById('nc-email').value||'',phone:document.getElementById('nc-phone').value||'',orcid:document.getElementById('nc-orcid').value||'',notes:document.getElementById('nc-notes').value||''};
-  state.contacts.push(c);closeModal('modal-new-contact');saveState();renderContacts();
+async function saveNewContact(){
+  const c={id:uid(),firstname:document.getElementById('nc-firstname').value||'',lastname:document.getElementById('nc-lastname').value||'',partner_id:document.getElementById('nc-partner').value||null,role:document.getElementById('nc-role').value||'',email:document.getElementById('nc-email').value||'',phone:document.getElementById('nc-phone').value||'',orcid:document.getElementById('nc-orcid').value||'',notes:document.getElementById('nc-notes').value||''};
+  setSync('syncing');const {error}=await sb.from('contacts').insert(c);
+  if(!error)contacts.push(c);setSync(error?'error':'ok');closeModal('modal-new-contact');renderContacts();
 }
-function deleteContact(id){if(confirm('Eliminare questo contatto?')){state.contacts=state.contacts.filter(c=>c.id!==id);saveState();renderContacts();}}
+async function deleteContact(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('contacts').delete().eq('id',id);contacts=contacts.filter(c=>c.id!==id);setSync('ok');renderContacts();}
 
 function renderDashboard(){
   const p=currentProject();if(!p)return;
+  const pWPs=wps.filter(w=>w.project_id===p.id);
+  const pParts=projectPartners.filter(pp=>pp.project_id===p.id);
+  const totalPM=pWPs.reduce((a,w)=>a+(w.pm||0),0);
   document.getElementById('dash-title').textContent='Dashboard — '+p.name;
-  const totalPM=(p.wps||[]).reduce((a,w)=>a+(w.pm||0),0);
-  document.getElementById('stat-wp').textContent=(p.wps||[]).length;
+  document.getElementById('stat-wp').textContent=pWPs.length;
   document.getElementById('stat-budget').textContent='€'+Number(p.budget||0).toLocaleString('it');
   document.getElementById('stat-pm').textContent=totalPM;
-  document.getElementById('stat-partners').textContent=(p.partnerIds||[]).length;
-  document.getElementById('dash-wp-table').innerHTML=`<thead><tr><th>WP</th><th>Titolo</th><th>Lead</th><th>PM</th></tr></thead><tbody>${(p.wps||[]).map(w=>`<tr><td><span class="badge badge-wp">${w.num}</span></td><td>${w.title}</td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">${w.pm||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun WP</td></tr>'}</tbody>`;
-  const dels=(p.deliverables||[]).sort((a,b)=>(a.month||99)-(b.month||99)).slice(0,6);
+  document.getElementById('stat-partners').textContent=pParts.length;
+  document.getElementById('dash-wp-table').innerHTML=`<thead><tr><th>WP</th><th>Titolo</th><th>Lead</th><th>PM</th></tr></thead><tbody>${pWPs.map(w=>`<tr><td><span class="badge badge-wp">${w.num}</span></td><td>${w.title}</td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">${w.pm||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun WP</td></tr>'}</tbody>`;
+  const pDels=deliverables.filter(d=>d.project_id===p.id).sort((a,b)=>(a.month||99)-(b.month||99)).slice(0,6);
   const sc={'on track':'badge-ok','at risk':'badge-risk','consegnato':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
-  document.getElementById('dash-del-table').innerHTML=`<thead><tr><th>ID</th><th>Titolo</th><th>Mese</th><th>Stato</th></tr></thead><tbody>${dels.map(d=>`<tr><td><span class="badge badge-del">${d.delId}</span></td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title}</td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun deliverable</td></tr>'}</tbody>`;
+  document.getElementById('dash-del-table').innerHTML=`<thead><tr><th>ID</th><th>Titolo</th><th>Mese</th><th>Stato</th></tr></thead><tbody>${pDels.map(d=>`<tr><td><span class="badge badge-del">${d.del_id}</span></td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title}</td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun deliverable</td></tr>'}</tbody>`;
 }
 
 function renderWPs(){
-  const p=currentProject();const tbody=document.getElementById('wp-table-body');
-  if(!p||!p.wps?.length){tbody.innerHTML='<tr><td colspan="9" class="empty">Nessun WP.</td></tr>';return;}
-  tbody.innerHTML=p.wps.map((w,i)=>`<tr><td><div style="display:flex;align-items:center;gap:5px"><div style="width:3px;height:20px;border-radius:2px;background:${COLORS[i%COLORS.length]}"></div><span class="badge badge-wp">${w.num}</span></div></td><td><strong>${w.title}</strong></td><td><span class="tag">${w.type}</span></td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">M${w.start}</td><td style="font-family:var(--mono)">M${w.end}</td><td style="font-family:var(--mono);font-weight:600">${w.pm||0}</td><td style="font-family:var(--mono)">€${Number(w.budget||0).toLocaleString('it')}</td><td><button class="btn btn-sm btn-danger" onclick="deleteWP('${w.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
+  const tbody=document.getElementById('wp-table-body');
+  const pWPs=wps.filter(w=>w.project_id===currentProjectId);
+  if(!pWPs.length){tbody.innerHTML='<tr><td colspan="9" class="empty">Nessun WP.</td></tr>';return;}
+  tbody.innerHTML=pWPs.map((w,i)=>`<tr><td><div style="display:flex;align-items:center;gap:5px"><div style="width:3px;height:20px;border-radius:2px;background:${COLORS[i%COLORS.length]}"></div><span class="badge badge-wp">${w.num}</span></div></td><td><strong>${w.title}</strong></td><td><span class="tag">${w.type}</span></td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">M${w.start_month}</td><td style="font-family:var(--mono)">M${w.end_month}</td><td style="font-family:var(--mono);font-weight:600">${w.pm||0}</td><td style="font-family:var(--mono)">€${Number(w.budget||0).toLocaleString('it')}</td><td><button class="btn btn-sm btn-danger" onclick="deleteWP('${w.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
 }
-function saveNewWP(){
-  const p=currentProject();if(!p)return;
-  const w={id:uid(),num:document.getElementById('wp-num').value||'WP?',title:document.getElementById('wp-title').value||'',type:document.getElementById('wp-type').value,lead:document.getElementById('wp-lead').value,start:parseInt(document.getElementById('wp-start').value)||1,end:parseInt(document.getElementById('wp-end').value)||36,pm:parseInt(document.getElementById('wp-pm').value)||0,budget:parseFloat(document.getElementById('wp-budget').value)||0,obj:document.getElementById('wp-obj').value||''};
-  if(!p.wps)p.wps=[];p.wps.push(w);closeModal('modal-new-wp');saveState();renderWPs();renderDashboard();renderPM();
+async function saveNewWP(){
+  if(!currentProjectId)return;
+  const w={id:uid(),project_id:currentProjectId,num:document.getElementById('wp-num').value||'WP?',title:document.getElementById('wp-title').value||'',type:document.getElementById('wp-type').value,lead:document.getElementById('wp-lead').value,start_month:parseInt(document.getElementById('wp-start').value)||1,end_month:parseInt(document.getElementById('wp-end').value)||36,pm:parseInt(document.getElementById('wp-pm').value)||0,budget:parseFloat(document.getElementById('wp-budget').value)||0,objectives:document.getElementById('wp-obj').value||''};
+  setSync('syncing');const {error}=await sb.from('work_packages').insert(w);
+  if(!error)wps.push(w);setSync(error?'error':'ok');closeModal('modal-new-wp');renderWPs();renderDashboard();renderPM();
 }
-function deleteWP(id){if(confirm('Eliminare questo WP?')){const p=currentProject();if(!p)return;p.wps=p.wps.filter(w=>w.id!==id);saveState();renderWPs();renderDashboard();}}
+async function deleteWP(id){if(!confirm('Eliminare questo WP?'))return;setSync('syncing');await sb.from('work_packages').delete().eq('id',id);wps=wps.filter(w=>w.id!==id);setSync('ok');renderWPs();renderDashboard();}
 
 function renderTasks(){
-  const p=currentProject();const tbody=document.getElementById('task-table-body');
-  if(!p||!p.tasks?.length){tbody.innerHTML='<tr><td colspan="10" class="empty">Nessun task.</td></tr>';return;}
+  const tbody=document.getElementById('task-table-body');
+  const pTasks=tasks.filter(t=>t.project_id===currentProjectId);
+  if(!pTasks.length){tbody.innerHTML='<tr><td colspan="10" class="empty">Nessun task.</td></tr>';return;}
   const sc={'completato':'badge-ok','in corso':'badge-new','a rischio':'badge-risk','in ritardo':'badge-late','nuovo':'badge-new'};
-  tbody.innerHTML=p.tasks.map(t=>`<tr><td style="font-family:var(--mono);font-size:11px">${t.taskId}</td><td><strong>${t.title}</strong></td><td><span class="badge badge-wp">${t.wpId}</span></td><td><span class="tag">${t.lead||'—'}</span></td><td style="font-family:var(--mono)">${t.pm||0}</td><td style="font-family:var(--mono)">M${t.start}</td><td style="font-family:var(--mono)">M${t.end}</td><td>${t.deliverable?`<span class="badge badge-del">${t.deliverable}</span>`:'—'}</td><td><span class="badge ${sc[t.status]||'badge-new'}">${t.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
+  tbody.innerHTML=pTasks.map(t=>`<tr><td style="font-family:var(--mono);font-size:11px">${t.task_id}</td><td><strong>${t.title}</strong></td><td><span class="badge badge-wp">${t.wp_num}</span></td><td><span class="tag">${t.lead||'—'}</span></td><td style="font-family:var(--mono)">${t.pm||0}</td><td style="font-family:var(--mono)">M${t.start_month}</td><td style="font-family:var(--mono)">M${t.end_month}</td><td>${t.deliverable?`<span class="badge badge-del">${t.deliverable}</span>`:'—'}</td><td><span class="badge ${sc[t.status]||'badge-new'}">${t.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
 }
-function saveNewTask(){
-  const p=currentProject();if(!p)return;
-  const t={id:uid(),taskId:document.getElementById('tk-id').value||'T?',title:document.getElementById('tk-title').value||'',wpId:document.getElementById('tk-wp').value,lead:document.getElementById('tk-lead').value,pm:parseInt(document.getElementById('tk-pm').value)||0,status:document.getElementById('tk-status').value,start:parseInt(document.getElementById('tk-start').value)||1,end:parseInt(document.getElementById('tk-end').value)||12,deliverable:document.getElementById('tk-del').value||''};
-  if(!p.tasks)p.tasks=[];p.tasks.push(t);closeModal('modal-new-task');saveState();renderTasks();renderPM();
+async function saveNewTask(){
+  if(!currentProjectId)return;
+  const t={id:uid(),project_id:currentProjectId,task_id:document.getElementById('tk-id').value||'T?',title:document.getElementById('tk-title').value||'',wp_num:document.getElementById('tk-wp').value,lead:document.getElementById('tk-lead').value,pm:parseInt(document.getElementById('tk-pm').value)||0,status:document.getElementById('tk-status').value,start_month:parseInt(document.getElementById('tk-start').value)||1,end_month:parseInt(document.getElementById('tk-end').value)||12,deliverable:document.getElementById('tk-del').value||''};
+  setSync('syncing');const {error}=await sb.from('tasks').insert(t);
+  if(!error)tasks.push(t);setSync(error?'error':'ok');closeModal('modal-new-task');renderTasks();renderPM();
 }
-function deleteTask(id){if(confirm('Eliminare questo task?')){const p=currentProject();if(!p)return;p.tasks=p.tasks.filter(t=>t.id!==id);saveState();renderTasks();}}
+async function deleteTask(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('tasks').delete().eq('id',id);tasks=tasks.filter(t=>t.id!==id);setSync('ok');renderTasks();}
 
 function renderPM(){
-  const p=currentProject();const el=document.getElementById('pm-matrix');if(!p){el.innerHTML='';return;}
-  const partners=state.partners.filter(pt=>(p.partnerIds||[]).includes(pt.id));const wps=p.wps||[];
-  if(!partners.length||!wps.length){el.innerHTML='<div class="empty">Aggiungi WP e partner per vedere la matrice PM</div>';return;}
-  let html=`<table class="data-table"><thead><tr><th>Partner</th>${wps.map(w=>`<th>${w.num}</th>`).join('')}<th>Totale PM</th><th>Budget pers. (€)</th></tr></thead><tbody>`;
-  let colTotals=wps.map(()=>0),grandTotal=0;
-  partners.forEach(pt=>{const tasks=(p.tasks||[]).filter(t=>t.lead===(pt.acronym||pt.name));const pmPerWP=wps.map(w=>tasks.filter(t=>t.wpId===w.num).reduce((a,t)=>a+(t.pm||0),0));const total=pmPerWP.reduce((a,v)=>a+v,0);grandTotal+=total;pmPerWP.forEach((v,i)=>colTotals[i]+=v);
+  const el=document.getElementById('pm-matrix');
+  const pWPs=wps.filter(w=>w.project_id===currentProjectId);
+  const pParts=projectPartners.filter(pp=>pp.project_id===currentProjectId).map(pp=>partners.find(p=>p.id===pp.partner_id)).filter(Boolean);
+  if(!pParts.length||!pWPs.length){el.innerHTML='<div class="empty">Aggiungi WP e partner per vedere la matrice PM</div>';return;}
+  let html=`<table class="data-table"><thead><tr><th>Partner</th>${pWPs.map(w=>`<th>${w.num}</th>`).join('')}<th>Totale PM</th><th>Budget pers. (€)</th></tr></thead><tbody>`;
+  let colTotals=pWPs.map(()=>0),grandTotal=0;
+  pParts.forEach(pt=>{const ptTasks=tasks.filter(t=>t.project_id===currentProjectId&&t.lead===(pt.acronym||pt.name));const pmPerWP=pWPs.map(w=>ptTasks.filter(t=>t.wp_num===w.num).reduce((a,t)=>a+(t.pm||0),0));const total=pmPerWP.reduce((a,v)=>a+v,0);grandTotal+=total;pmPerWP.forEach((v,i)=>colTotals[i]+=v);
     html+=`<tr><td><strong>${pt.acronym||pt.name}</strong></td>${pmPerWP.map(v=>`<td style="font-family:var(--mono)">${v||0}</td>`).join('')}<td style="font-family:var(--mono);font-weight:700">${total}</td><td style="font-family:var(--mono)">€${(total*6000).toLocaleString('it')}</td></tr>`;});
-  html+=`<tr style="background:#eef2fb;font-weight:700"><td>TOTALE</td>${colTotals.map(v=>`<td style="font-family:var(--mono);color:var(--eu)">${v}</td>`).join('')}<td style="font-family:var(--mono);color:var(--eu)">${grandTotal}</td><td style="font-family:var(--mono);color:var(--eu)">€${(grandTotal*6000).toLocaleString('it')}</td></tr></tbody></table><div style="padding:10px 14px;font-size:10px;color:var(--muted)">PM calcolati dalle tasks assegnate. Tasso medio stimato: €6.000/PM.</div>`;
+  html+=`<tr style="background:#eef2fb;font-weight:700"><td>TOTALE</td>${colTotals.map(v=>`<td style="font-family:var(--mono);color:var(--eu)">${v}</td>`).join('')}<td style="font-family:var(--mono);color:var(--eu)">${grandTotal}</td><td style="font-family:var(--mono);color:var(--eu)">€${(grandTotal*6000).toLocaleString('it')}</td></tr></tbody></table><div style="padding:10px 14px;font-size:10px;color:var(--muted)">PM calcolati dalle tasks assegnate. Tasso medio: €6.000/PM.</div>`;
   el.innerHTML=html;
 }
 
 function renderBudget(){
-  const p=currentProject();const el=document.getElementById('budget-table');if(!p){el.innerHTML='';return;}
-  const wps=p.wps||[];if(!wps.length){el.innerHTML='<div class="empty">Aggiungi WP per vedere il budget</div>';return;}
+  const el=document.getElementById('budget-table');
+  const pWPs=wps.filter(w=>w.project_id===currentProjectId);
+  if(!pWPs.length){el.innerHTML='<div class="empty">Aggiungi WP per vedere il budget</div>';return;}
   const cP=w=>(w.pm||0)*6000,cS=w=>Math.round((w.budget||0)*0.08),cO=w=>Math.round((w.budget||0)*0.12),cI=w=>Math.round((cP(w)+cO(w))*0.25);
   const cats=[{label:'A. Personnel costs',fn:cP},{label:'B. Subcontracting',fn:cS},{label:'C. Other direct costs',fn:cO},{label:'D. Indirect costs (25%)',fn:cI}];
-  const totB=wps.reduce((a,w)=>a+(w.budget||0),0)||1;
-  let html=`<table class="data-table"><thead><tr><th>Categoria</th>${wps.map(w=>`<th>${w.num}</th>`).join('')}<th>TOTALE (€)</th><th>%</th></tr></thead><tbody>`;
-  cats.forEach(cat=>{const vals=wps.map(w=>cat.fn(w));const sum=vals.reduce((a,v)=>a+v,0);html+=`<tr><td>${cat.label}</td>${vals.map(v=>`<td style="font-family:var(--mono)">${Number(v).toLocaleString('it')}</td>`).join('')}<td style="font-family:var(--mono);font-weight:700">${Number(sum).toLocaleString('it')}</td><td style="font-family:var(--mono)">${Math.round(sum/totB*100)}%</td></tr>`;});
-  const tots=wps.map(w=>cats.reduce((a,c)=>a+c.fn(w),0));const gT=tots.reduce((a,v)=>a+v,0);
-  html+=`<tr style="background:#eef2fb;font-weight:700"><td>TOTALE PROGETTO</td>${tots.map(v=>`<td style="font-family:var(--mono);color:var(--eu)">${Number(v).toLocaleString('it')}</td>`).join('')}<td style="font-family:var(--mono);color:var(--eu)">${Number(gT).toLocaleString('it')}</td><td>100%</td></tr></tbody></table>`;
+  const totB=pWPs.reduce((a,w)=>a+(w.budget||0),0)||1;
+  let html=`<table class="data-table"><thead><tr><th>Categoria</th>${pWPs.map(w=>`<th>${w.num}</th>`).join('')}<th>TOTALE (€)</th><th>%</th></tr></thead><tbody>`;
+  cats.forEach(cat=>{const vals=pWPs.map(w=>cat.fn(w));const sum=vals.reduce((a,v)=>a+v,0);html+=`<tr><td>${cat.label}</td>${vals.map(v=>`<td style="font-family:var(--mono)">${Number(v).toLocaleString('it')}</td>`).join('')}<td style="font-family:var(--mono);font-weight:700">${Number(sum).toLocaleString('it')}</td><td style="font-family:var(--mono)">${Math.round(sum/totB*100)}%</td></tr>`;});
+  const tots=pWPs.map(w=>cats.reduce((a,c)=>a+c.fn(w),0));const gT=tots.reduce((a,v)=>a+v,0);
+  html+=`<tr style="background:#eef2fb;font-weight:700"><td>TOTALE</td>${tots.map(v=>`<td style="font-family:var(--mono);color:var(--eu)">${Number(v).toLocaleString('it')}</td>`).join('')}<td style="font-family:var(--mono);color:var(--eu)">${Number(gT).toLocaleString('it')}</td><td>100%</td></tr></tbody></table>`;
   el.innerHTML=html;
 }
 
 function renderMilestones(){
-  const p=currentProject();const tbody=document.getElementById('ms-table-body');
+  const tbody=document.getElementById('ms-table-body');
+  const pMS=milestones.filter(m=>m.project_id===currentProjectId).sort((a,b)=>(a.month||99)-(b.month||99));
   const sc={'on track':'badge-ok','at risk':'badge-risk','completata':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
-  if(!p||!p.milestones?.length){tbody.innerHTML='<tr><td colspan="7" class="empty">Nessuna milestone.</td></tr>';return;}
-  tbody.innerHTML=p.milestones.sort((a,b)=>(a.month||99)-(b.month||99)).map(m=>`<tr><td><span class="badge badge-ms">${m.msId}</span></td><td>${m.title}</td><td><span class="badge badge-wp">${m.wpId}</span></td><td style="font-family:var(--mono)">M${m.month}</td><td>${m.verify||'—'}</td><td><span class="badge ${sc[m.status]||'badge-new'}">${m.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteMS('${m.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
+  if(!pMS.length){tbody.innerHTML='<tr><td colspan="7" class="empty">Nessuna milestone.</td></tr>';return;}
+  tbody.innerHTML=pMS.map(m=>`<tr><td><span class="badge badge-ms">${m.ms_id}</span></td><td>${m.title}</td><td><span class="badge badge-wp">${m.wp_num}</span></td><td style="font-family:var(--mono)">M${m.month}</td><td>${m.verify||'—'}</td><td><span class="badge ${sc[m.status]||'badge-new'}">${m.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteMS('${m.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
 }
-function saveNewMS(){
-  const p=currentProject();if(!p)return;
-  const m={id:uid(),msId:document.getElementById('ms-id').value,title:document.getElementById('ms-title').value,wpId:document.getElementById('ms-wp').value,month:parseInt(document.getElementById('ms-month').value)||1,verify:document.getElementById('ms-verify').value,status:document.getElementById('ms-status').value};
-  if(!p.milestones)p.milestones=[];p.milestones.push(m);closeModal('modal-new-ms');saveState();renderMilestones();
+async function saveNewMS(){
+  if(!currentProjectId)return;
+  const m={id:uid(),project_id:currentProjectId,ms_id:document.getElementById('ms-id').value,title:document.getElementById('ms-title').value,wp_num:document.getElementById('ms-wp').value,month:parseInt(document.getElementById('ms-month').value)||1,verify:document.getElementById('ms-verify').value,status:document.getElementById('ms-status').value};
+  setSync('syncing');const {error}=await sb.from('milestones').insert(m);
+  if(!error)milestones.push(m);setSync(error?'error':'ok');closeModal('modal-new-ms');renderMilestones();
 }
-function deleteMS(id){if(confirm('Eliminare questa milestone?')){const p=currentProject();if(!p)return;p.milestones=p.milestones.filter(m=>m.id!==id);saveState();renderMilestones();}}
+async function deleteMS(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('milestones').delete().eq('id',id);milestones=milestones.filter(m=>m.id!==id);setSync('ok');renderMilestones();}
 
 function renderDeliverables(){
-  const p=currentProject();const tbody=document.getElementById('del-table-body');
+  const tbody=document.getElementById('del-table-body');
+  const pDels=deliverables.filter(d=>d.project_id===currentProjectId).sort((a,b)=>(a.month||99)-(b.month||99));
   const sc={'on track':'badge-ok','at risk':'badge-risk','consegnato':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
-  if(!p||!p.deliverables?.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nessun deliverable.</td></tr>';return;}
-  tbody.innerHTML=p.deliverables.sort((a,b)=>(a.month||99)-(b.month||99)).map(d=>`<tr><td><span class="badge badge-del">${d.delId}</span></td><td>${d.title}</td><td><span class="badge badge-wp">${d.wpId}</span></td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="tag">${d.type}</span></td><td style="font-size:11px;color:var(--muted)">${d.taskId||'—'}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteDel('${d.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
+  if(!pDels.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nessun deliverable.</td></tr>';return;}
+  tbody.innerHTML=pDels.map(d=>`<tr><td><span class="badge badge-del">${d.del_id}</span></td><td>${d.title}</td><td><span class="badge badge-wp">${d.wp_num}</span></td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="tag">${d.type}</span></td><td style="font-size:11px;color:var(--muted)">${d.task_id||'—'}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteDel('${d.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
 }
-function saveNewDel(){
-  const p=currentProject();if(!p)return;
-  const d={id:uid(),delId:document.getElementById('del-id').value,title:document.getElementById('del-title').value,wpId:document.getElementById('del-wp').value,taskId:document.getElementById('del-task').value,month:parseInt(document.getElementById('del-month').value)||1,type:document.getElementById('del-type').value,dissem:document.getElementById('del-dissem').value,status:document.getElementById('del-status').value};
-  if(!p.deliverables)p.deliverables=[];p.deliverables.push(d);closeModal('modal-new-del');saveState();renderDeliverables();renderDashboard();
+async function saveNewDel(){
+  if(!currentProjectId)return;
+  const d={id:uid(),project_id:currentProjectId,del_id:document.getElementById('del-id').value,title:document.getElementById('del-title').value,wp_num:document.getElementById('del-wp').value,task_id:document.getElementById('del-task').value||null,month:parseInt(document.getElementById('del-month').value)||1,type:document.getElementById('del-type').value,dissem:document.getElementById('del-dissem').value,status:document.getElementById('del-status').value};
+  setSync('syncing');const {error}=await sb.from('deliverables').insert(d);
+  if(!error)deliverables.push(d);setSync(error?'error':'ok');closeModal('modal-new-del');renderDeliverables();renderDashboard();
 }
-function deleteDel(id){if(confirm('Eliminare questo deliverable?')){const p=currentProject();if(!p)return;p.deliverables=p.deliverables.filter(d=>d.id!==id);saveState();renderDeliverables();}}
+async function deleteDel(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('deliverables').delete().eq('id',id);deliverables=deliverables.filter(d=>d.id!==id);setSync('ok');renderDeliverables();}
 
 async function askAI(prompt){
-  const input=document.getElementById('ai-input');
-  const resp=document.getElementById('ai-response');
-  const loading=document.getElementById('ai-loading');
+  const input=document.getElementById('ai-input');const resp=document.getElementById('ai-response');const loading=document.getElementById('ai-loading');
   const text=prompt||input.value.trim();if(!text)return;
   input.value='';loading.style.display='block';resp.style.display='none';resp.textContent='';
-  const sys=`Sei un esperto di progettazione europea con 15 anni di esperienza in Horizon Europe, EUI Urban Innovation, LIFE, Interreg. Conosci i template CE, regole di ammissibilità, struttura WP, person months, budget categories A-D, milestones, deliverables. Rispondi in italiano a meno che non sia richiesto inglese. Usa linguaggio tecnico dei bandi europei. Formatta con tabelle quando utile.`;
+  const sys=`Sei un esperto di progettazione europea con 15 anni di esperienza in Horizon Europe, EUI Urban Innovation, LIFE, Interreg. Conosci i template CE, regole di ammissibilità, struttura WP, person months, budget categories A-D, milestones, deliverables. Rispondi in italiano. Usa linguaggio tecnico dei bandi europei. Formatta con tabelle quando utile.`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:text}]})});
     const data=await res.json();
-    const reply=data.content?.find(b=>b.type==='text')?.text||'Nessuna risposta.';
-    resp.textContent=reply;resp.style.display='block';
+    resp.textContent=data.content?.find(b=>b.type==='text')?.text||'Nessuna risposta.';resp.style.display='block';
   }catch(e){resp.textContent='Errore: '+e.message;resp.style.display='block';}
   loading.style.display='none';
 }
 document.getElementById('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
 
-init();
+loadAll();
 </script>
 </body>
 </html>
