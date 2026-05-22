@@ -157,6 +157,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   <div class="nav-item" onclick="showPage('pmmatrix')"><i class="ti ti-table"></i> Matrice PM</div>
   <div class="nav-item" onclick="showPage('budget')"><i class="ti ti-coins"></i> Budget</div>
   <div class="nav-item" onclick="showPage('milestones')"><i class="ti ti-flag"></i> Milestones & Del.</div>
+  <div class="nav-item" onclick="showPage('gantt')"><i class="ti ti-timeline"></i> Gantt</div>
   <div class="nav-label">Strumenti</div>
   <div class="nav-item" onclick="showPage('ai')"><i class="ti ti-sparkles"></i> Assistente AI</div>
   <div class="nav-item" onclick="showPage('export')"><i class="ti ti-file-export"></i> Esporta</div>
@@ -243,6 +244,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   <div id="tab-del" style="display:none">
     <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-del')"><i class="ti ti-plus"></i> Aggiungi deliverable</button></div>
     <div class="card"><div class="card-body" style="padding:0"><table class="data-table"><thead><tr><th>ID</th><th>Titolo</th><th>WP</th><th>Mese</th><th>Tipo</th><th>Task</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="del-table-body"></tbody></table></div></div>
+  </div>
+</div>
+
+<!-- GANTT -->
+<div class="page" id="page-gantt">
+  <div class="page-title">Gantt Chart — HOLA 24 mesi</div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Timeline WP, Tasks, Milestones e Deliverables</span>
+      <div style="display:flex;gap:12px;font-size:10px;align-items:center">
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:12px;height:10px;border-radius:2px;background:#003399;display:inline-block"></span>WP/Task</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#FFCC00;border:1.5px solid #cc9900;transform:rotate(45deg);display:inline-block"></span>Milestone</span>
+        <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#1a6b3c;display:inline-block"></span>Deliverable</span>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0;overflow-x:auto">
+      <div id="gantt-container"></div>
+    </div>
   </div>
 </div>
 
@@ -485,7 +504,7 @@ async function createTaskPartnersTable(){
   setSync('ok');
 }
 
-function renderAll(){renderProjectSelect();renderProjectList();renderPartners();renderContacts();renderDashboard();renderWPs();renderTasksByWP();renderPMMatrix();renderBudget();renderMilestones();renderDeliverables();}
+function renderAll(){renderProjectSelect();renderProjectList();renderPartners();renderContacts();renderDashboard();renderWPs();renderTasksByWP();renderPMMatrix();renderBudget();renderMilestones();renderDeliverables();renderGantt();}
 
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -903,6 +922,73 @@ async function deleteItem(table,id,type){
   else if(type==='ms')milestones=milestones.filter(m=>m.id!==id);
   else if(type==='del')deliverables=deliverables.filter(d=>d.id!==id);
   setSync('ok');renderAll();
+}
+
+
+// GANTT
+function renderGantt(){
+  const el=document.getElementById('gantt-container');
+  if(!el)return;
+  const pWPs=wps.filter(w=>w.project_id===currentProjectId);
+  const pTasks=tasks.filter(t=>t.project_id===currentProjectId);
+  const pMS=milestones.filter(m=>m.project_id===currentProjectId);
+  const pDels=deliverables.filter(d=>d.project_id===currentProjectId);
+  const totalMonths=cp()?.months||24;
+  
+  if(!pWPs.length){el.innerHTML='<div class="empty">Aggiungi WP per visualizzare il Gantt.</div>';return;}
+
+  const months=Array.from({length:totalMonths},(_,i)=>i+1);
+  const colW=32;
+  const labelW=200;
+
+  let html=`<table style="border-collapse:collapse;min-width:${labelW+totalMonths*colW}px;font-size:11px">`;
+  // Header months
+  html+=`<thead><tr><th style="width:${labelW}px;padding:6px 10px;background:#fafbfd;border-bottom:2px solid var(--border);text-align:left;font-size:10px;color:var(--muted)">WP / Task</th>`;
+  months.forEach(m=>html+=`<th style="width:${colW}px;padding:4px 2px;background:#fafbfd;border-bottom:2px solid var(--border);text-align:center;font-size:9px;color:var(--muted);border-left:${m%6===1?'2px solid #d0d9ee':'1px solid #f0f0f0'}">${m}</th>`);
+  html+=`</tr></thead><tbody>`;
+
+  pWPs.forEach((w,wi)=>{
+    const color=COLORS[wi%COLORS.length];
+    const wTasks=pTasks.filter(t=>t.wp_num===w.num);
+    
+    // WP row
+    html+=`<tr style="background:#f5f8ff"><td style="padding:5px 10px;font-weight:700;border-bottom:1px solid #eef1f7"><div style="display:flex;align-items:center;gap:6px"><div style="width:4px;height:16px;border-radius:2px;background:${color}"></div><span class="badge badge-wp">${w.num}</span> ${w.title}</div></td>`;
+    months.forEach(m=>{
+      const active=m>=w.start_month&&m<=w.end_month;
+      html+=`<td style="padding:2px;border-bottom:1px solid #eef1f7;border-left:${m%6===1?'2px solid #d0d9ee':'1px solid #f5f5f5'}">`;
+      if(active)html+=`<div style="height:12px;background:${color};opacity:0.25;border-radius:1px"></div>`;
+      html+=`</td>`;
+    });
+    html+=`</tr>`;
+
+    // Task rows
+    wTasks.forEach(t=>{
+      html+=`<tr><td style="padding:4px 10px 4px 24px;border-bottom:1px solid #f5f5f5;color:var(--muted)"><span style="font-family:var(--mono);font-size:10px;color:${color};margin-right:4px">${t.task_id}</span>${t.title}</td>`;
+      months.forEach(m=>{
+        const active=m>=t.start_month&&m<=t.end_month;
+        const ms=pMS.find(x=>x.wp_num===w.num&&x.month===m);
+        const del=pDels.find(x=>x.wp_num===w.num&&x.month===m&&x.task_id===t.task_id);
+        html+=`<td style="padding:2px;border-bottom:1px solid #f5f5f5;text-align:center;border-left:${m%6===1?'2px solid #d0d9ee':'1px solid #f5f5f5'}">`;
+        if(del)html+=`<div title="${del.del_id}" style="width:10px;height:10px;border-radius:50%;background:#1a6b3c;margin:auto"></div>`;
+        else if(active)html+=`<div style="height:10px;background:${color};opacity:0.6;border-radius:2px"></div>`;
+        html+=`</td>`;
+      });
+      html+=`</tr>`;
+    });
+  });
+
+  // Milestone row
+  html+=`<tr style="background:#fffae8"><td style="padding:5px 10px;font-weight:600;font-size:11px;border-top:2px solid var(--border)"><i class="ti ti-flag" style="color:#cc9900;margin-right:4px"></i>Milestones</td>`;
+  months.forEach(m=>{
+    const ms=pMS.filter(x=>x.month===m);
+    html+=`<td style="padding:2px;border-top:2px solid var(--border);text-align:center;border-left:${m%6===1?'2px solid #d0d9ee':'1px solid #f5f5f5'}">`;
+    if(ms.length>0)html+=`<div title="${ms.map(x=>x.ms_id+': '+x.title).join(', ')}" style="width:10px;height:10px;background:#FFCC00;border:1.5px solid #cc9900;transform:rotate(45deg);margin:auto;cursor:help"></div>`;
+    html+=`</td>`;
+  });
+  html+=`</tr>`;
+
+  html+=`</tbody></table>`;
+  el.innerHTML=html;
 }
 
 // AI
