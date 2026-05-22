@@ -699,7 +699,7 @@ function renderWPs(){
   if(!pWPs.length){tbody.innerHTML='<tr><td colspan="9" class="empty">Nessun WP.</td></tr>';return;}
   tbody.innerHTML=pWPs.map((w,i)=>`<tr>
     <td><div style="display:flex;align-items:center;gap:5px"><div style="width:3px;height:20px;border-radius:2px;background:${COLORS[i%COLORS.length]}"></div><span class="badge badge-wp">${w.num}</span></div></td>
-    <td><strong>${w.title}</strong>${w.objectives?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${w.objectives.slice(0,55)}…</div>`:''}</td>
+    <td><strong>${currentLang==='en'&&w.title_en?w.title_en:w.title}</strong>${(currentLang==='en'?w.objectives_en:w.objectives)?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${(currentLang==='en'?w.objectives_en:w.objectives).slice(0,55)}…</div>`:''}</td>
     <td><span class="tag">${w.type}</span></td><td><span class="tag">${w.lead||'—'}</span></td>
     <td style="font-family:var(--mono)">M${w.start_month}</td><td style="font-family:var(--mono)">M${w.end_month}</td>
     <td style="font-family:var(--mono);font-weight:600">${w.pm||0}</td>
@@ -742,7 +742,7 @@ function renderTasksByWP(){
           return `<div class="task-card" id="tc-${t.id}">
             <div class="task-card-header" onclick="toggleTask('${t.id}')">
               <span style="font-family:var(--mono);font-size:11px;color:var(--muted);width:36px">${t.task_id}</span>
-              <span style="font-weight:600;flex:1">${t.title}</span>
+              <span style="font-weight:600;flex:1">${currentLang==='en'&&t.title_en?t.title_en:t.title}</span>
               <span class="badge ${sc[t.status]||'badge-new'}" style="margin-right:6px">${t.status}</span>
               <span style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-right:8px">M${t.start_month}–M${t.end_month}</span>
               <span style="font-family:var(--mono);font-weight:600;color:var(--eu);margin-right:8px">${t.pm||0} PM</span>
@@ -884,12 +884,10 @@ function renderDashboard(){
   document.getElementById('dash-title').textContent='Dashboard — '+p.name;
   document.getElementById('stat-wp').textContent=pWPs.length;
   const budgetVal = Number(p.budget||0);
-  const budgetDisplay = budgetVal >= 1000000 ? '€' + (budgetVal/1000000).toFixed(1).replace('.',',') + 'M' : '€' + Math.round(budgetVal).toLocaleString('it');
-  document.getElementById('stat-budget').textContent = budgetDisplay;
-  document.getElementById('stat-budget').title = '€' + Math.round(budgetVal).toLocaleString('it');
+  document.getElementById('stat-budget').textContent = budgetVal >= 1000000 ? '€' + (budgetVal/1000000).toFixed(1) + 'M' : '€' + Math.round(budgetVal).toLocaleString('it');
   document.getElementById('stat-pm').textContent=pWPs.reduce((a,w)=>a+(w.pm||0),0);
   document.getElementById('stat-partners').textContent=pP.length;
-  document.getElementById('dash-wp-table').innerHTML=`<thead><tr><th>WP</th><th>Titolo</th><th>Lead</th><th>PM</th></tr></thead><tbody>${pWPs.map(w=>`<tr><td><span class="badge badge-wp">${w.num}</span></td><td>${w.title}</td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">${w.pm||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun WP</td></tr>'}</tbody>`;
+  document.getElementById('dash-wp-table').innerHTML=`<thead><tr><th>WP</th><th>Titolo</th><th>Lead</th><th>PM</th></tr></thead><tbody>${pWPs.map(w=>`<tr><td><span class="badge badge-wp">${w.num}</span></td><td>${currentLang==='en'&&w.title_en?w.title_en:w.title}</td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">${w.pm||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun WP</td></tr>'}</tbody>`;
   const pD=deliverables.filter(d=>d.project_id===p.id).sort((a,b)=>(a.month||99)-(b.month||99)).slice(0,6);
   const sc={'on track':'badge-ok','at risk':'badge-risk','consegnato':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
   document.getElementById('dash-del-table').innerHTML=`<thead><tr><th>ID</th><th>Titolo</th><th>Mese</th><th>Stato</th></tr></thead><tbody>${pD.map(d=>`<tr><td><span class="badge badge-del">${d.del_id}</span></td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title}</td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun deliverable</td></tr>'}</tbody>`;
@@ -916,7 +914,7 @@ function renderMilestones(){
   const pMS=milestones.filter(m=>m.project_id===currentProjectId).sort((a,b)=>(a.month||99)-(b.month||99));
   const sc={'on track':'badge-ok','at risk':'badge-risk','completata':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
   if(!pMS.length){tbody.innerHTML='<tr><td colspan="7" class="empty">Nessuna milestone.</td></tr>';return;}
-  tbody.innerHTML=pMS.map(m=>`<tr><td><span class="badge badge-ms">${m.ms_id}</span></td><td>${m.title}</td><td><span class="badge badge-wp">${m.wp_num}</span></td><td style="font-family:var(--mono)">M${m.month}</td><td>${m.verify||'—'}</td><td><span class="badge ${sc[m.status]||'badge-new'}">${m.status||'—'}</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-edit btn-sm" onclick="openModal('modal-ms',${JSON.stringify(m).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deleteItem('milestones','${m.id}','ms')"><i class="ti ti-trash"></i></button></div></td></tr>`).join('');
+  tbody.innerHTML=pMS.map(m=>`<tr><td><span class="badge badge-ms">${m.ms_id}</span></td><td>${currentLang==='en'&&m.title_en?m.title_en:m.title}</td><td><span class="badge badge-wp">${m.wp_num}</span></td><td style="font-family:var(--mono)">M${m.month}</td><td>${m.verify||'—'}</td><td><span class="badge ${sc[m.status]||'badge-new'}">${m.status||'—'}</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-edit btn-sm" onclick="openModal('modal-ms',${JSON.stringify(m).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button><button class="btn btn-danger btn-sm" onclick="deleteItem('milestones','${m.id}','ms')"><i class="ti ti-trash"></i></button></div></td></tr>`).join('');
 }
 async function saveMS(){
   if(!currentProjectId)return;
@@ -1041,6 +1039,108 @@ async function askAI(prompt){
 }
 document.getElementById('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
 
+
+
+// TRANSLATE ALL PROJECT CONTENT TO ENGLISH
+async function translateAll(){
+  const btn = document.getElementById('translate-btn');
+  const progress = document.getElementById('translate-progress');
+  btn.disabled = true;
+  btn.textContent = '⏳ Traduzione in corso...';
+  progress.style.display = 'block';
+
+  const pWPs = wps.filter(w=>w.project_id===currentProjectId);
+  const pTasks = tasks.filter(t=>t.project_id===currentProjectId);
+  const pMS = milestones.filter(m=>m.project_id===currentProjectId);
+  const pDels = deliverables.filter(d=>d.project_id===currentProjectId);
+  const pParts = projectPartners.filter(x=>x.project_id===currentProjectId)
+    .map(x=>partners.find(p=>p.id===x.partner_id)).filter(Boolean);
+
+  const sys = `You are an expert EU project translator. Translate Italian project content to professional English suitable for European Commission proposals (EUI Urban Innovation, Horizon Europe). Keep technical terms, acronyms and proper nouns unchanged. Return only JSON, no markdown.`;
+
+  async function aiTranslate(prompt) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:1000, system:sys, messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const text = data.content?.find(b=>b.type==='text')?.text||'{}';
+    try{ return JSON.parse(text.replace(/```json|```/g,'').trim()); }catch(e){ return {}; }
+  }
+
+  setSync('syncing');
+
+  // Translate WPs
+  progress.textContent = '📋 Traduzione Work Packages...';
+  for(const w of pWPs){
+    if(w.title_en && w.title_en.length > 3) continue; // skip if already translated
+    const res = await aiTranslate(`Translate to English. Return JSON only with keys "title_en" and "objectives_en".
+Title: "${w.title}"
+Objectives: "${w.objectives||''}"`);
+    if(res.title_en){
+      await sb.from('work_packages').update({title_en:res.title_en, objectives_en:res.objectives_en||''}).eq('id',w.id);
+      const i = wps.findIndex(x=>x.id===w.id); if(i>=0){wps[i].title_en=res.title_en;wps[i].objectives_en=res.objectives_en||'';}
+    }
+  }
+
+  // Translate Tasks
+  progress.textContent = '✅ Traduzione Tasks...';
+  for(const t of pTasks){
+    if(t.title_en && t.title_en.length > 3) continue;
+    const res = await aiTranslate(`Translate to English. Return JSON only with key "title_en".
+Title: "${t.title}"`);
+    if(res.title_en){
+      await sb.from('tasks').update({title_en:res.title_en}).eq('id',t.id);
+      const i = tasks.findIndex(x=>x.id===t.id); if(i>=0) tasks[i].title_en=res.title_en;
+    }
+  }
+
+  // Translate Milestones
+  progress.textContent = '🏁 Traduzione Milestones...';
+  for(const m of pMS){
+    if(m.title_en && m.title_en.length > 3) continue;
+    const res = await aiTranslate(`Translate to English. Return JSON only with keys "title_en" and "verify_en".
+Title: "${m.title}"
+Verification means: "${m.verify||''}"`);
+    if(res.title_en){
+      await sb.from('milestones').update({title_en:res.title_en, verify_en:res.verify_en||''}).eq('id',m.id);
+      const i = milestones.findIndex(x=>x.id===m.id); if(i>=0){milestones[i].title_en=res.title_en;milestones[i].verify_en=res.verify_en||'';}
+    }
+  }
+
+  // Translate Deliverables
+  progress.textContent = '📦 Traduzione Deliverables...';
+  for(const d of pDels){
+    if(d.title_en && d.title_en.length > 3) continue;
+    const res = await aiTranslate(`Translate to English. Return JSON only with key "title_en".
+Title: "${d.title}"`);
+    if(res.title_en){
+      await sb.from('deliverables').update({title_en:res.title_en}).eq('id',d.id);
+      const i = deliverables.findIndex(x=>x.id===d.id); if(i>=0) deliverables[i].title_en=res.title_en;
+    }
+  }
+
+  // Translate Partners expertise
+  progress.textContent = '🏢 Traduzione profili partner...';
+  for(const p of pParts){
+    if(p.notes_en && p.notes_en.length > 3) continue;
+    const res = await aiTranslate(`Translate to English. Return JSON only with keys "notes_en" and "activities_en".
+Notes: "${p.notes||''}"
+Activities: "${p.activities||''}"`);
+    if(res.notes_en){
+      await sb.from('partners').update({notes_en:res.notes_en, activities_en:res.activities_en||''}).eq('id',p.id);
+      const i = partners.findIndex(x=>x.id===p.id); if(i>=0){partners[i].notes_en=res.notes_en;partners[i].activities_en=res.activities_en||'';}
+    }
+  }
+
+  setSync('ok');
+  progress.textContent = '✅ Traduzione completata! Clicca IT/EN per cambiare lingua.';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-check"></i> Traduzione completata!';
+  btn.style.background = '#1a6b3c';
+  btn.style.color = '#fff';
+  renderAll();
+}
 
 // LANGUAGE
 let currentLang = 'it';
