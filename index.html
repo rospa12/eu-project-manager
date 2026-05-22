@@ -66,6 +66,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .btn-gold:hover{background:#f0c000}
 .btn-danger{background:#fde;color:#7a1a2a;border-color:#f5b5c0}
 .btn-danger:hover{background:#fcc}
+.btn-edit{background:#f0f4ff;color:var(--eu);border-color:#c0ccee}
+.btn-edit:hover{background:#dce8ff}
 .btn-sm{padding:3px 8px;font-size:11px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form-group{display:flex;flex-direction:column;gap:3px}
@@ -74,17 +76,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--eu);box-shadow:0 0 0 2px rgba(0,51,153,.1)}
 .form-group textarea{resize:vertical;min-height:60px}
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,30,80,.45);display:flex;align-items:center;justify-content:center;z-index:100}
-.modal{background:#fff;border-radius:var(--r);border:1px solid var(--border);width:500px;max-width:95vw;max-height:85vh;overflow-y:auto}
-.modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:#fafbfd;position:sticky;top:0}
+.modal{background:#fff;border-radius:var(--r);border:1px solid var(--border);width:520px;max-width:95vw;max-height:88vh;overflow-y:auto}
+.modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:#fafbfd;position:sticky;top:0;z-index:1}
 .modal-title{font-weight:600;font-size:13px;color:var(--eu);flex:1}
 .modal-body{padding:16px}
-.modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
-.partner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:#fff;z-index:1}
+.partner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
 .partner-card{border:1px solid var(--border);border-radius:var(--r);padding:12px;transition:all .15s;position:relative}
 .partner-card:hover{border-color:var(--eu);background:#f5f8ff}
 .partner-initial{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
-.partner-name{font-weight:600;font-size:12px;color:var(--eu)}
-.partner-country{font-size:10px;color:var(--muted);margin-top:1px}
 .ai-panel{background:linear-gradient(135deg,#001966,#003399);border-radius:var(--r);padding:14px;color:#fff;margin-bottom:14px}
 .ai-input{flex:1;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:var(--r);padding:6px 10px;font-family:var(--font);font-size:12px}
 .ai-input::placeholder{color:rgba(255,255,255,.4)}
@@ -101,9 +101,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .tag{display:inline-block;padding:1px 6px;border-radius:2px;font-size:10px;background:#e8ecf5;color:var(--muted)}
 .contact-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
 .contact-card{border:1px solid var(--border);border-radius:var(--r);padding:12px}
-.contact-name{font-weight:600;font-size:12px;color:var(--text);margin-bottom:2px}
-.contact-role{font-size:11px;color:var(--muted)}
-.contact-info{font-size:11px;margin-top:6px;color:var(--text)}
 .contact-info a{color:var(--eu);text-decoration:none}
 .empty{text-align:center;padding:32px;color:var(--muted);font-size:12px}
 .section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -114,32 +111,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;gap:12px}
 .loading-spinner{width:32px;height:32px;border:3px solid #e8ecf5;border-top-color:var(--eu);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.action-btns{display:flex;gap:4px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#c0cce0;border-radius:3px}
 </style>
 </head>
 <body>
-
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-spinner"></div>
   <div style="font-size:13px;color:var(--muted)">Connessione al database condiviso...</div>
 </div>
-
 <div class="topbar">
   <div class="eu-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
   <div class="topbar-title">EU Project Manager</div>
-  <div class="sync-badge">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-label">connesso</span>
-  </div>
+  <div class="sync-badge"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">connesso</span></div>
   <div class="project-switcher">
     <span style="font-size:11px;opacity:.6">Progetto:</span>
     <select id="project-select" onchange="switchProject(this.value)"></select>
     <button class="btn-new-proj" onclick="openModal('modal-new-project')">+ Nuovo</button>
   </div>
 </div>
-
 <div class="layout">
 <div class="sidebar">
   <div class="nav-label">Generale</div>
@@ -158,26 +150,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   <div class="nav-item" onclick="showPage('ai')"><i class="ti ti-sparkles"></i> Assistente AI</div>
   <div class="nav-item" onclick="showPage('export')"><i class="ti ti-file-export"></i> Esporta</div>
 </div>
-
 <div class="main">
 
+<!-- PROJECTS -->
 <div class="page active" id="page-projects">
   <div class="page-title">I miei progetti</div>
-  <div class="section-row"><div></div>
-    <button class="btn btn-primary btn-sm" onclick="openModal('modal-new-project')"><i class="ti ti-plus"></i> Nuovo progetto</button>
-  </div>
+  <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-new-project')"><i class="ti ti-plus"></i> Nuovo progetto</button></div>
   <div class="project-list" id="project-list"></div>
 </div>
 
+<!-- PARTNERS -->
 <div class="page" id="page-partners">
   <div class="page-title">Database Partner</div>
-  <div class="section-row">
-    <span style="font-size:12px;color:var(--muted)">Condiviso con tutto il team</span>
-    <button class="btn btn-primary btn-sm" onclick="openModal('modal-new-partner')"><i class="ti ti-plus"></i> Aggiungi partner</button>
-  </div>
+  <div class="section-row"><span style="font-size:12px;color:var(--muted)">Condiviso con tutto il team</span><button class="btn btn-primary btn-sm" onclick="openModal('modal-new-partner')"><i class="ti ti-plus"></i> Aggiungi partner</button></div>
   <div class="partner-grid" id="partner-grid"></div>
 </div>
 
+<!-- CONTACTS -->
 <div class="page" id="page-contacts">
   <div class="page-title">Database Contatti</div>
   <div class="section-row">
@@ -187,6 +176,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   <div class="contact-list" id="contact-list"></div>
 </div>
 
+<!-- DASHBOARD -->
 <div class="page" id="page-dashboard">
   <div class="page-title" id="dash-title">Dashboard</div>
   <div class="stats-bar">
@@ -201,226 +191,231 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
   </div>
 </div>
 
+<!-- WORK PACKAGES -->
 <div class="page" id="page-workpackages">
   <div class="page-title">Work Packages</div>
   <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-new-wp')"><i class="ti ti-plus"></i> Aggiungi WP</button></div>
   <div class="card"><div class="card-body" style="padding:0">
-    <table class="data-table"><thead><tr><th>WP</th><th>Titolo</th><th>Tipo</th><th>Lead</th><th>M.inizio</th><th>M.fine</th><th>PM</th><th>Budget (€)</th><th></th></tr></thead>
+    <table class="data-table"><thead><tr><th>WP</th><th>Titolo</th><th>Tipo</th><th>Lead</th><th>Inizio</th><th>Fine</th><th>PM</th><th>Budget (€)</th><th>Azioni</th></tr></thead>
     <tbody id="wp-table-body"></tbody></table>
   </div></div>
 </div>
 
+<!-- TASKS -->
 <div class="page" id="page-tasks">
   <div class="page-title">Tasks</div>
   <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-new-task')"><i class="ti ti-plus"></i> Aggiungi task</button></div>
   <div class="card"><div class="card-body" style="padding:0">
-    <table class="data-table"><thead><tr><th>ID</th><th>Task</th><th>WP</th><th>Lead</th><th>PM</th><th>M.inizio</th><th>M.fine</th><th>Deliverable</th><th>Stato</th><th></th></tr></thead>
+    <table class="data-table"><thead><tr><th>ID</th><th>Task</th><th>WP</th><th>Lead</th><th>PM</th><th>Inizio</th><th>Fine</th><th>Deliverable</th><th>Stato</th><th>Azioni</th></tr></thead>
     <tbody id="task-table-body"></tbody></table>
   </div></div>
 </div>
 
+<!-- PERSON MONTHS -->
 <div class="page" id="page-personmonths">
   <div class="page-title">Person Months per partner</div>
-  <div class="card"><div class="card-header"><span class="card-title">Matrice PM — partner × WP</span></div>
-  <div class="card-body" style="padding:0"><div id="pm-matrix"></div></div></div>
+  <div class="card"><div class="card-header"><span class="card-title">Matrice PM — partner × WP</span></div><div class="card-body" style="padding:0"><div id="pm-matrix"></div></div></div>
 </div>
 
+<!-- BUDGET -->
 <div class="page" id="page-budget">
   <div class="page-title">Budget — categorie di costo (template CE)</div>
-  <div class="card"><div class="card-header"><span class="card-title">Budget summary</span><span style="font-size:11px;color:var(--muted);font-family:var(--mono)">Horizon Europe / EUI</span></div>
-  <div class="card-body" style="padding:0"><div id="budget-table"></div></div></div>
+  <div class="card"><div class="card-header"><span class="card-title">Budget summary</span><span style="font-size:11px;color:var(--muted);font-family:var(--mono)">Horizon Europe / EUI</span></div><div class="card-body" style="padding:0"><div id="budget-table"></div></div></div>
 </div>
 
+<!-- MILESTONES -->
 <div class="page" id="page-milestones">
   <div class="page-title">Milestones & Deliverables</div>
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('ms')">Milestones</div>
-    <div class="tab" onclick="switchTab('del')">Deliverables</div>
-  </div>
+  <div class="tabs"><div class="tab active" onclick="switchTab('ms')">Milestones</div><div class="tab" onclick="switchTab('del')">Deliverables</div></div>
   <div id="tab-ms">
     <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-new-ms')"><i class="ti ti-plus"></i> Aggiungi milestone</button></div>
-    <div class="card"><div class="card-body" style="padding:0"><table class="data-table"><thead><tr><th>ID</th><th>Milestone</th><th>WP</th><th>Mese</th><th>Mezzo verifica</th><th>Stato</th><th></th></tr></thead><tbody id="ms-table-body"></tbody></table></div></div>
+    <div class="card"><div class="card-body" style="padding:0"><table class="data-table"><thead><tr><th>ID</th><th>Milestone</th><th>WP</th><th>Mese</th><th>Mezzo verifica</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="ms-table-body"></tbody></table></div></div>
   </div>
   <div id="tab-del" style="display:none">
     <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-new-del')"><i class="ti ti-plus"></i> Aggiungi deliverable</button></div>
-    <div class="card"><div class="card-body" style="padding:0"><table class="data-table"><thead><tr><th>ID</th><th>Titolo</th><th>WP</th><th>Mese</th><th>Tipo</th><th>Task</th><th>Stato</th><th></th></tr></thead><tbody id="del-table-body"></tbody></table></div></div>
+    <div class="card"><div class="card-body" style="padding:0"><table class="data-table"><thead><tr><th>ID</th><th>Titolo</th><th>WP</th><th>Mese</th><th>Tipo</th><th>Task</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="del-table-body"></tbody></table></div></div>
   </div>
 </div>
 
+<!-- AI -->
 <div class="page" id="page-ai">
   <div class="page-title">Assistente AI — EU Project Writing</div>
   <div class="ai-panel">
     <div style="font-size:13px;font-weight:600;margin-bottom:3px"><i class="ti ti-sparkles" style="color:var(--gold)"></i> Claude — EU Project Assistant</div>
     <div style="font-size:11px;opacity:.7;margin-bottom:10px">Genera testi WP, calcola PM, adatta ai template CE/EUI Urban</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-      <button class="btn btn-gold btn-sm" onclick="askAI('Scrivi la descrizione completa per WP2 Urban Data Analysis per un progetto EUI Urban 2.4M€ con partner accademici e municipalità.')">📋 Genera WP</button>
-      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera una tabella di person months realistici per un progetto Horizon Europe 36 mesi, 2.4M€, 8 partner.')">📊 Calcola PM</button>
-      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Scrivi la sezione Impact per un progetto EUI Urban Innovation, focus su trasformazione urbana, cittadini, scalabilità. 200 parole.')">🎯 Impact</button>
-      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera risk matrix con 6 rischi tipici per un progetto europeo urbano multi-partner.')">⚠ Risk matrix</button>
-      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera 5 milestones e 10 deliverables per progetto urbano europeo 36 mesi. Formato tabella.')">🏁 Milestones</button>
+      <button class="btn btn-gold btn-sm" onclick="askAI('Scrivi la descrizione completa WP1 Governance e Co-design del Social Leasing per il progetto HOLA EUI Urban Innovation, coordinato dal Comune di Isernia.')">📋 WP1 HOLA</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Scrivi la descrizione completa WP2 Messa a Terra e Riqualificazione NEB per il progetto HOLA Social Leasing a Isernia e Venafro.')">📋 WP2 HOLA</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Scrivi la descrizione completa WP3 Misurazione SROI e Trasferibilità per il progetto HOLA, con Transfer Cities MARA HR Croazia, CC Kilkis Grecia, Innovasturias Spagna.')">📋 WP3 HOLA</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Scrivi la sezione Excellence e Impact per il progetto HOLA Housing and Opportunity through Local Alliances, bando EUI Urban Innovation Call 4, coordinato da Comune di Isernia, modello Social Leasing New European Bauhaus.')">🎯 Excellence HOLA</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)" onclick="askAI('Genera risk matrix con 6 rischi tipici per il progetto HOLA Social Leasing EUI Urban Innovation: tipo, probabilità, impatto, WP, mitigazione.')">⚠ Risk matrix</button>
     </div>
     <div style="display:flex;gap:7px">
-      <input class="ai-input" id="ai-input" placeholder="Es: scrivi la sezione Excellence per un bando EUI Urban...">
+      <input class="ai-input" id="ai-input" placeholder="Es: scrivi la sezione Excellence per HOLA...">
       <button class="btn btn-gold btn-sm" onclick="askAI()"><i class="ti ti-send"></i> Invia</button>
     </div>
     <div class="ai-loading" id="ai-loading"><i class="ti ti-loader"></i> Claude sta elaborando...</div>
     <div class="ai-response" id="ai-response"></div>
   </div>
-  <div class="card"><div class="card-header"><span class="card-title">Template sezioni standard</span></div>
+  <div class="card"><div class="card-header"><span class="card-title">Template sezioni standard HOLA</span></div>
   <div class="card-body"><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">
-    <button class="btn btn-sm" onclick="askAI('Excellence statement 150 parole per progetto EUI Urban Innovation.')">Excellence statement</button>
-    <button class="btn btn-sm" onclick="askAI('Description of action WP1 Project Management Horizon Europe con tasks T1.1-T1.3.')">Description of action WP</button>
-    <button class="btn btn-sm" onclick="askAI('Ethics and data protection per progetto urbano. Formato Horizon Europe.')">Ethics section</button>
-    <button class="btn btn-sm" onclick="askAI('5 KPIs quantitativi per impatto progetto innovazione urbana EUI.')">KPIs e indicatori</button>
-    <button class="btn btn-sm" onclick="askAI('Exploitation plan sintetico per progetto innovazione urbana europea.')">Exploitation plan</button>
-    <button class="btn btn-sm" onclick="askAI('Gantt narrativo 36 mesi per progetto EUI Urban con dipendenze tra WP.')">Narrative Gantt</button>
+    <button class="btn btn-sm" onclick="askAI('Scrivi la narrativa del partenariato HOLA: Comune Isernia, Venafro, Homes4All, Fondazione Impact Housing, UniMol, ASEC, MARA HR, CC Kilkis, Innovasturias. Evidenzia complementarietà e bilanciamento geografico.')">Partnership quality</button>
+    <button class="btn btn-sm" onclick="askAI('Scrivi la sezione State Aid Analysis per il progetto HOLA Social Leasing: il Comune assegna immobili pubblici a privati con canone ridotto in cambio di servizi sociali. Analizza compatibilità con le norme UE sugli Aiuti di Stato.')">State Aid analysis</button>
+    <button class="btn btn-sm" onclick="askAI('Scrivi la sezione New European Bauhaus per il progetto HOLA: come i principi NEB (sostenibilità, estetica, inclusione) guidano la riqualificazione degli spazi a Isernia e Venafro.')">New European Bauhaus</button>
+    <button class="btn btn-sm" onclick="askAI('Calcola e distribuisci i person months per il progetto HOLA tra i 9 partner e i 3 WP. Budget totale 2.5M€, 24 mesi.')">Calcola PM HOLA</button>
+    <button class="btn btn-sm" onclick="askAI('Scrivi la metodologia SROI per il progetto HOLA: come misurare il ritorno sociale del Social Leasing, indicatori, baseline, target e formula di calcolo.')">Metodologia SROI</button>
+    <button class="btn btn-sm" onclick="askAI('Genera 5 milestones e 12 deliverables per il progetto HOLA strutturato in WP1 Governance, WP2 Pilota fisico NEB, WP3 SROI e trasferibilità. Formato tabella CE.')">Milestones & Del. HOLA</button>
   </div></div></div>
 </div>
 
+<!-- EXPORT -->
 <div class="page" id="page-export">
   <div class="page-title">Esporta — template CE & EUI</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="card" style="cursor:pointer" onclick="askAI('Genera testo completo tabella WP formato Horizon Europe Part B.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📄</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Annex 1 — Description of Action</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Vai all'Assistente AI per generare il testo</div></div></div>
-    <div class="card" style="cursor:pointer" onclick="askAI('Esporta tabella budget formato EC con categorie A-D per partner e WP.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">💶</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Financial tables (EC format)</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Budget per partner, WP e categoria</div></div></div>
-    <div class="card" style="cursor:pointer" onclick="askAI('Genera Gantt testuale con WP, milestones e deliverables su 36 mesi.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📅</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Gantt chart (testo / CSV)</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Copiabile in Word o Excel</div></div></div>
-    <div class="card" style="cursor:pointer" onclick="askAI('Tabella deliverables formato Horizon Europe con tutti i campi CE obbligatori.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📦</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Lista deliverables (CE template)</div><div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5">Tutti i campi obbligatori CE</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('ai');askAI('Genera il testo completo della tabella WP nel formato ufficiale Horizon Europe Part B per il progetto HOLA.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📄</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Annex 1 — Description of Action</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Part B EUI completa</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('ai');askAI('Esporta la matrice budget HOLA nel formato Financial Statement EC: partner, WP, categorie A-D, FESR 80% e cofinanziamento 20%.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">💶</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Financial tables (EC format)</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Budget per partner e categoria</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('ai');askAI('Genera Gantt testuale progetto HOLA 24 mesi con WP1, WP2, WP3, milestones e deliverables principali.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📅</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Gantt chart HOLA</div><div style="font-size:11px;color:var(--muted);margin-top:3px">24 mesi, copiabile in Word</div></div></div>
+    <div class="card" style="cursor:pointer" onclick="showPage('ai');askAI('Tabella deliverables HOLA formato Horizon Europe: ID, WP, nome, tipo R/DEM/OTHER, livello disseminazione PU/CO, mese consegna.')"><div class="card-body"><div style="font-size:20px;margin-bottom:6px">📦</div><div style="font-weight:600;font-size:12px;color:var(--eu)">Lista deliverables HOLA</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Tutti i campi obbligatori CE</div></div></div>
   </div>
 </div>
 
 </div></div>
 
-<!-- MODALS -->
+<!-- ===== MODALS ===== -->
+
+<!-- NEW/EDIT PROJECT -->
 <div class="modal-overlay" id="modal-new-project" style="display:none">
 <div class="modal">
-  <div class="modal-header"><span class="modal-title"><i class="ti ti-folder-plus"></i> Nuovo progetto</span><button class="btn btn-sm" onclick="closeModal('modal-new-project')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-header"><span class="modal-title" id="modal-project-title"><i class="ti ti-folder-plus"></i> Nuovo progetto</span><button class="btn btn-sm" onclick="closeModal('modal-new-project')"><i class="ti ti-x"></i></button></div>
   <div class="modal-body"><div class="form-grid">
-    <div class="form-group" style="grid-column:1/-1"><label>Acronimo</label><input id="np-name" placeholder="es. URBAN-NEXUS"></div>
-    <div class="form-group" style="grid-column:1/-1"><label>Titolo completo</label><input id="np-title" placeholder="es. Urban Networks for Equitable Sustainability"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Acronimo</label><input id="np-name" placeholder="es. HOLA"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Titolo completo</label><input id="np-title" placeholder="es. Housing and Opportunity through Local Alliances"></div>
     <div class="form-group"><label>Bando / Call</label><select id="np-call"><option>Horizon Europe</option><option>EUI Urban Innovation</option><option>LIFE</option><option>Interreg</option><option>ERDF</option><option>Altro</option></select></div>
-    <div class="form-group"><label>Topic</label><input id="np-topic" placeholder="es. HORIZON-MISS-2024-NEB-01"></div>
+    <div class="form-group"><label>Topic</label><input id="np-topic" placeholder="es. EUI-IA Call 4 — Topic 4"></div>
     <div class="form-group"><label>Durata (mesi)</label><input id="np-months" type="number" value="36"></div>
-    <div class="form-group"><label>Budget totale (€)</label><input id="np-budget" type="number" placeholder="2400000"></div>
-    <div class="form-group"><label>Coordinatore</label><input id="np-coord" placeholder="es. Politecnico di Milano"></div>
+    <div class="form-group"><label>Budget totale (€)</label><input id="np-budget" type="number" placeholder="2500000"></div>
+    <div class="form-group"><label>Coordinatore</label><input id="np-coord" placeholder="es. Comune di Isernia"></div>
     <div class="form-group"><label>Stato</label><select id="np-status"><option>In preparazione</option><option>Sottomesso</option><option>In valutazione</option><option>Approvato</option><option>In esecuzione</option><option>Concluso</option></select></div>
   </div></div>
-  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-project')">Annulla</button><button class="btn btn-primary" onclick="saveNewProject()"><i class="ti ti-check"></i> Crea progetto</button></div>
+  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-project')">Annulla</button><button class="btn btn-primary" id="btn-save-project" onclick="saveProject()"><i class="ti ti-check"></i> Salva</button></div>
 </div></div>
 
+<!-- NEW/EDIT PARTNER -->
 <div class="modal-overlay" id="modal-new-partner" style="display:none">
 <div class="modal">
-  <div class="modal-header"><span class="modal-title"><i class="ti ti-building-plus"></i> Nuovo partner</span><button class="btn btn-sm" onclick="closeModal('modal-new-partner')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-header"><span class="modal-title" id="modal-partner-title"><i class="ti ti-building-plus"></i> Partner</span><button class="btn btn-sm" onclick="closeModal('modal-new-partner')"><i class="ti ti-x"></i></button></div>
   <div class="modal-body"><div class="form-grid">
-    <div class="form-group" style="grid-column:1/-1"><label>Nome istituzione</label><input id="pp-name" placeholder="es. Politecnico di Milano"></div>
-    <div class="form-group"><label>Acronimo</label><input id="pp-acronym" placeholder="es. PoliMI"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Nome istituzione</label><input id="pp-name" placeholder="es. Comune di Isernia"></div>
+    <div class="form-group"><label>Acronimo</label><input id="pp-acronym" placeholder="es. MUA-Isernia"></div>
     <div class="form-group"><label>Paese</label><input id="pp-country" placeholder="es. Italia"></div>
     <div class="form-group"><label>Tipo</label><select id="pp-type"><option>Università / Centro ricerca</option><option>Comune / Autorità pubblica</option><option>PMI</option><option>Grande impresa</option><option>ONG / Associazione</option><option>Fondazione</option><option>Altro</option></select></div>
     <div class="form-group"><label>Ruolo</label><select id="pp-role"><option>Coordinatore</option><option>Partner</option><option>Associato</option><option>Subcontractor</option></select></div>
     <div class="form-group" style="grid-column:1/-1"><label>Sito web</label><input id="pp-web" placeholder="https://..."></div>
-    <div class="form-group" style="grid-column:1/-1"><label>Note / Expertise</label><textarea id="pp-notes" placeholder="Settori di competenza, precedenti progetti europei..."></textarea></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Note / Expertise</label><textarea id="pp-notes"></textarea></div>
   </div></div>
-  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-partner')">Annulla</button><button class="btn btn-primary" onclick="saveNewPartner()"><i class="ti ti-check"></i> Salva partner</button></div>
+  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-partner')">Annulla</button><button class="btn btn-primary" id="btn-save-partner" onclick="savePartner()"><i class="ti ti-check"></i> Salva</button></div>
 </div></div>
 
+<!-- NEW/EDIT CONTACT -->
 <div class="modal-overlay" id="modal-new-contact" style="display:none">
 <div class="modal">
-  <div class="modal-header"><span class="modal-title"><i class="ti ti-user-plus"></i> Nuovo contatto</span><button class="btn btn-sm" onclick="closeModal('modal-new-contact')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-header"><span class="modal-title" id="modal-contact-title"><i class="ti ti-user-plus"></i> Contatto</span><button class="btn btn-sm" onclick="closeModal('modal-new-contact')"><i class="ti ti-x"></i></button></div>
   <div class="modal-body"><div class="form-grid">
     <div class="form-group"><label>Nome</label><input id="nc-firstname" placeholder="Nome"></div>
     <div class="form-group"><label>Cognome</label><input id="nc-lastname" placeholder="Cognome"></div>
     <div class="form-group"><label>Partner</label><select id="nc-partner"></select></div>
     <div class="form-group"><label>Ruolo nel progetto</label><input id="nc-role" placeholder="es. WP leader, PI, PM"></div>
-    <div class="form-group"><label>Email</label><input id="nc-email" type="email" placeholder="nome@istituzione.eu"></div>
-    <div class="form-group"><label>Telefono</label><input id="nc-phone" placeholder="+39..."></div>
-    <div class="form-group" style="grid-column:1/-1"><label>ORCID / LinkedIn</label><input id="nc-orcid" placeholder="https://orcid.org/..."></div>
-    <div class="form-group" style="grid-column:1/-1"><label>Note</label><textarea id="nc-notes" placeholder="Expertise, disponibilità..."></textarea></div>
+    <div class="form-group"><label>Email</label><input id="nc-email" type="email"></div>
+    <div class="form-group"><label>Telefono</label><input id="nc-phone"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>ORCID / LinkedIn</label><input id="nc-orcid"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Note</label><textarea id="nc-notes"></textarea></div>
   </div></div>
-  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-contact')">Annulla</button><button class="btn btn-primary" onclick="saveNewContact()"><i class="ti ti-check"></i> Salva contatto</button></div>
+  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-contact')">Annulla</button><button class="btn btn-primary" id="btn-save-contact" onclick="saveContact()"><i class="ti ti-check"></i> Salva</button></div>
 </div></div>
 
+<!-- NEW/EDIT WP -->
 <div class="modal-overlay" id="modal-new-wp" style="display:none">
 <div class="modal">
-  <div class="modal-header"><span class="modal-title"><i class="ti ti-folder-plus"></i> Nuovo Work Package</span><button class="btn btn-sm" onclick="closeModal('modal-new-wp')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-header"><span class="modal-title" id="modal-wp-title"><i class="ti ti-folder-plus"></i> Work Package</span><button class="btn btn-sm" onclick="closeModal('modal-new-wp')"><i class="ti ti-x"></i></button></div>
   <div class="modal-body"><div class="form-grid">
     <div class="form-group"><label>Numero WP</label><input id="wp-num" placeholder="es. WP1"></div>
-    <div class="form-group"><label>Titolo</label><input id="wp-title" placeholder="es. Coordination & Management"></div>
+    <div class="form-group"><label>Titolo</label><input id="wp-title" placeholder="es. Governance e Co-design"></div>
     <div class="form-group"><label>Tipo</label><select id="wp-type"><option>MGT</option><option>RTD</option><option>DEMO</option><option>COMM</option><option>OTHER</option></select></div>
     <div class="form-group"><label>Partner lead</label><select id="wp-lead"></select></div>
     <div class="form-group"><label>Mese inizio</label><input id="wp-start" type="number" placeholder="1" min="1"></div>
-    <div class="form-group"><label>Mese fine</label><input id="wp-end" type="number" placeholder="36" min="1"></div>
-    <div class="form-group"><label>Person months</label><input id="wp-pm" type="number" placeholder="48"></div>
-    <div class="form-group"><label>Budget (€)</label><input id="wp-budget" type="number" placeholder="320000"></div>
-    <div class="form-group" style="grid-column:1/-1"><label>Obiettivi</label><textarea id="wp-obj" placeholder="Obiettivi principali..."></textarea></div>
+    <div class="form-group"><label>Mese fine</label><input id="wp-end" type="number" placeholder="24" min="1"></div>
+    <div class="form-group"><label>Person months</label><input id="wp-pm" type="number" placeholder="0"></div>
+    <div class="form-group"><label>Budget (€)</label><input id="wp-budget" type="number" placeholder="0"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Obiettivi</label><textarea id="wp-obj"></textarea></div>
   </div></div>
-  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-wp')">Annulla</button><button class="btn btn-primary" onclick="saveNewWP()"><i class="ti ti-check"></i> Salva WP</button></div>
+  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-wp')">Annulla</button><button class="btn btn-primary" id="btn-save-wp" onclick="saveWP()"><i class="ti ti-check"></i> Salva</button></div>
 </div></div>
 
+<!-- NEW/EDIT TASK -->
 <div class="modal-overlay" id="modal-new-task" style="display:none">
 <div class="modal">
-  <div class="modal-header"><span class="modal-title"><i class="ti ti-checkbox"></i> Nuovo Task</span><button class="btn btn-sm" onclick="closeModal('modal-new-task')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-header"><span class="modal-title" id="modal-task-title"><i class="ti ti-checkbox"></i> Task</span><button class="btn btn-sm" onclick="closeModal('modal-new-task')"><i class="ti ti-x"></i></button></div>
   <div class="modal-body"><div class="form-grid">
-    <div class="form-group"><label>ID task</label><input id="tk-id" placeholder="T2.1"></div>
-    <div class="form-group"><label>Titolo</label><input id="tk-title" placeholder="es. Urban data collection"></div>
+    <div class="form-group"><label>ID task</label><input id="tk-id" placeholder="T1.1"></div>
+    <div class="form-group"><label>Titolo</label><input id="tk-title" placeholder="es. Architettura legale"></div>
     <div class="form-group"><label>WP</label><select id="tk-wp"></select></div>
     <div class="form-group"><label>Partner responsabile</label><select id="tk-lead"></select></div>
-    <div class="form-group"><label>Person months</label><input id="tk-pm" type="number" placeholder="12"></div>
+    <div class="form-group"><label>Person months</label><input id="tk-pm" type="number" placeholder="0"></div>
     <div class="form-group"><label>Stato</label><select id="tk-status"><option>nuovo</option><option>in corso</option><option>completato</option><option>a rischio</option><option>in ritardo</option></select></div>
     <div class="form-group"><label>Mese inizio</label><input id="tk-start" type="number" placeholder="1"></div>
-    <div class="form-group"><label>Mese fine</label><input id="tk-end" type="number" placeholder="12"></div>
-    <div class="form-group" style="grid-column:1/-1"><label>Deliverable collegato</label><input id="tk-del" placeholder="es. D2.1"></div>
+    <div class="form-group"><label>Mese fine</label><input id="tk-end" type="number" placeholder="6"></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Deliverable collegato</label><input id="tk-del" placeholder="es. D1.1"></div>
   </div></div>
-  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-task')">Annulla</button><button class="btn btn-primary" onclick="saveNewTask()"><i class="ti ti-check"></i> Salva task</button></div>
+  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-task')">Annulla</button><button class="btn btn-primary" id="btn-save-task" onclick="saveTask()"><i class="ti ti-check"></i> Salva</button></div>
 </div></div>
 
+<!-- NEW/EDIT MILESTONE -->
 <div class="modal-overlay" id="modal-new-ms" style="display:none">
 <div class="modal">
-  <div class="modal-header"><span class="modal-title"><i class="ti ti-flag"></i> Nuova Milestone</span><button class="btn btn-sm" onclick="closeModal('modal-new-ms')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-header"><span class="modal-title" id="modal-ms-title"><i class="ti ti-flag"></i> Milestone</span><button class="btn btn-sm" onclick="closeModal('modal-new-ms')"><i class="ti ti-x"></i></button></div>
   <div class="modal-body"><div class="form-grid">
     <div class="form-group"><label>ID</label><input id="ms-id" placeholder="MS1"></div>
-    <div class="form-group"><label>Titolo</label><input id="ms-title" placeholder="es. Kick-off completato"></div>
+    <div class="form-group"><label>Titolo</label><input id="ms-title" placeholder="es. Regolamento approvato"></div>
     <div class="form-group"><label>WP</label><select id="ms-wp"></select></div>
     <div class="form-group"><label>Mese</label><input id="ms-month" type="number" placeholder="6"></div>
-    <div class="form-group" style="grid-column:1/-1"><label>Mezzo di verifica</label><input id="ms-verify" placeholder="es. Meeting minutes, Report approvato..."></div>
+    <div class="form-group" style="grid-column:1/-1"><label>Mezzo di verifica</label><input id="ms-verify" placeholder="es. Delibera consiliare"></div>
     <div class="form-group"><label>Stato</label><select id="ms-status"><option>—</option><option>on track</option><option>at risk</option><option>completata</option><option>in ritardo</option></select></div>
   </div></div>
-  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-ms')">Annulla</button><button class="btn btn-primary" onclick="saveNewMS()"><i class="ti ti-check"></i> Salva milestone</button></div>
+  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-ms')">Annulla</button><button class="btn btn-primary" id="btn-save-ms" onclick="saveMS()"><i class="ti ti-check"></i> Salva</button></div>
 </div></div>
 
+<!-- NEW/EDIT DELIVERABLE -->
 <div class="modal-overlay" id="modal-new-del" style="display:none">
 <div class="modal">
-  <div class="modal-header"><span class="modal-title"><i class="ti ti-file-text"></i> Nuovo Deliverable</span><button class="btn btn-sm" onclick="closeModal('modal-new-del')"><i class="ti ti-x"></i></button></div>
+  <div class="modal-header"><span class="modal-title" id="modal-del-title"><i class="ti ti-file-text"></i> Deliverable</span><button class="btn btn-sm" onclick="closeModal('modal-new-del')"><i class="ti ti-x"></i></button></div>
   <div class="modal-body"><div class="form-grid">
-    <div class="form-group"><label>ID</label><input id="del-id" placeholder="D2.1"></div>
-    <div class="form-group"><label>Titolo</label><input id="del-title" placeholder="es. Urban Data Report"></div>
+    <div class="form-group"><label>ID</label><input id="del-id" placeholder="D1.1"></div>
+    <div class="form-group"><label>Titolo</label><input id="del-title" placeholder="es. Analisi legale Social Leasing"></div>
     <div class="form-group"><label>WP</label><select id="del-wp"></select></div>
-    <div class="form-group"><label>Task collegato</label><input id="del-task" placeholder="es. T2.1"></div>
-    <div class="form-group"><label>Mese consegna</label><input id="del-month" type="number" placeholder="12"></div>
+    <div class="form-group"><label>Task collegato</label><input id="del-task" placeholder="es. T1.1"></div>
+    <div class="form-group"><label>Mese consegna</label><input id="del-month" type="number" placeholder="3"></div>
     <div class="form-group"><label>Tipo</label><select id="del-type"><option>R</option><option>DEM</option><option>OTHER</option><option>ETHICS</option></select></div>
     <div class="form-group"><label>Disseminazione</label><select id="del-dissem"><option>PU</option><option>CO</option><option>CI</option></select></div>
     <div class="form-group"><label>Stato</label><select id="del-status"><option>—</option><option>on track</option><option>at risk</option><option>consegnato</option><option>in ritardo</option></select></div>
   </div></div>
-  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-del')">Annulla</button><button class="btn btn-primary" onclick="saveNewDel()"><i class="ti ti-check"></i> Salva deliverable</button></div>
+  <div class="modal-footer"><button class="btn" onclick="closeModal('modal-new-del')">Annulla</button><button class="btn btn-primary" id="btn-save-del" onclick="saveDel()"><i class="ti ti-check"></i> Salva</button></div>
 </div></div>
 
 <script>
-const SUPABASE_URL = 'https://yvrwgdthmecocgvfmwsq.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+const SUPABASE_URL='https://yvrwgdthmecocgvfmwsq.supabase.co';
+const SUPABASE_KEY='sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const COLORS=['#003399','#E63946','#2A9D8F','#E9C46A','#6B4EAE','#F4845F','#1D7874','#DC143C'];
 const COLORS_BG=['#dce8ff','#fde8e9','#dff5f2','#fff8e0','#efe8ff','#fef0ea','#e0f5f4','#fde8ec'];
 const COLORS_TXT=['#1a3a8a','#7a1a1e','#0f4a3c','#7a5a00','#3a1a7a','#7a3010','#0a4040','#7a0010'];
-
-let projects=[], partners=[], contacts=[], wps=[], tasks=[], milestones=[], deliverables=[], projectPartners=[];
+let projects=[],partners=[],contacts=[],wps=[],tasks=[],milestones=[],deliverables=[],projectPartners=[];
 let currentProjectId=null;
+// Edit state
+let editingId={project:null,partner:null,contact:null,wp:null,task:null,ms:null,del:null};
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function currentProject(){return projects.find(p=>p.id===currentProjectId)||null;}
-function setSync(state){
-  const dot=document.getElementById('sync-dot');
-  const lbl=document.getElementById('sync-label');
-  dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');
-  lbl.textContent=state==='syncing'?'salvataggio...':state==='error'?'errore connessione':'connesso';
-}
+function cp(){return projects.find(p=>p.id===currentProjectId)||null;}
+function setSync(s){const d=document.getElementById('sync-dot'),l=document.getElementById('sync-label');d.className='sync-dot'+(s==='syncing'?' syncing':s==='error'?' error':'');l.textContent=s==='syncing'?'salvataggio...':s==='error'?'errore':'connesso';}
 
 async function loadAll(){
   try{
@@ -434,171 +429,371 @@ async function loadAll(){
       sb.from('deliverables').select('*').order('created_at'),
       sb.from('project_partners').select('*'),
     ]);
-    projects=pr.data||[]; partners=pa.data||[]; contacts=co.data||[];
-    wps=wp.data||[]; tasks=tk.data||[]; milestones=ms.data||[];
-    deliverables=dl.data||[]; projectPartners=pp.data||[];
-    if(!currentProjectId && projects.length) currentProjectId=projects[0].id;
+    projects=pr.data||[];partners=pa.data||[];contacts=co.data||[];
+    wps=wp.data||[];tasks=tk.data||[];milestones=ms.data||[];
+    deliverables=dl.data||[];projectPartners=pp.data||[];
+    if(!currentProjectId&&projects.length)currentProjectId=projects[0].id;
     setSync('ok');
-  }catch(e){setSync('error');console.error(e);}
+  }catch(e){setSync('error');}
   document.getElementById('loading-overlay').style.display='none';
   renderAll();
 }
 
 function renderAll(){renderProjectSelect();renderProjectList();renderPartners();renderContacts();renderDashboard();renderWPs();renderTasks();renderPM();renderBudget();renderMilestones();renderDeliverables();}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});}
+function switchTab(t){document.getElementById('tab-ms').style.display=t==='ms'?'block':'none';document.getElementById('tab-del').style.display=t==='del'?'block':'none';document.querySelectorAll('.tab').forEach((x,i)=>x.classList.toggle('active',i===(t==='ms'?0:1)));}
 
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
-}
-function switchTab(tab){
-  document.getElementById('tab-ms').style.display=tab==='ms'?'block':'none';
-  document.getElementById('tab-del').style.display=tab==='del'?'block':'none';
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='ms'?0:1)));
-}
-function openModal(id){
-  const proj=currentProject();
-  const ncP=document.querySelector('#nc-partner');
-  if(ncP) ncP.innerHTML=partners.map(p=>`<option value="${p.id}">${p.acronym||p.name}</option>`).join('');
-  ['#wp-lead','#tk-lead'].forEach(s=>{const el=document.querySelector(s);if(el)el.innerHTML=partners.map(p=>`<option value="${p.acronym||p.name}">${p.acronym||p.name}</option>`).join('');});
+function populateSelects(forModal){
   const projWPs=wps.filter(w=>w.project_id===currentProjectId);
-  ['#tk-wp','#ms-wp','#del-wp'].forEach(s=>{const el=document.querySelector(s);if(el)el.innerHTML=projWPs.map(w=>`<option value="${w.num}">${w.num} — ${w.title}</option>`).join('');});
+  if(forModal==='contact'||forModal==='all'){const s=document.querySelector('#nc-partner');if(s)s.innerHTML=partners.map(p=>`<option value="${p.id}">${p.acronym||p.name}</option>`).join('');}
+  if(forModal==='wp'||forModal==='all'){['#wp-lead','#tk-lead'].forEach(sel=>{const s=document.querySelector(sel);if(s)s.innerHTML=partners.map(p=>`<option value="${p.acronym||p.name}">${p.acronym||p.name}</option>`).join('');});}
+  if(forModal==='task'||forModal==='ms'||forModal==='del'||forModal==='all'){['#tk-wp','#ms-wp','#del-wp'].forEach(sel=>{const s=document.querySelector(sel);if(s)s.innerHTML=projWPs.map(w=>`<option value="${w.num}">${w.num} — ${w.title}</option>`).join('');});}
+}
+
+function openModal(id,editObj=null){
+  // Reset editing state for this modal type
+  const type=id.replace('modal-new-','');
+  editingId[type]=editObj?editObj.id:null;
+  populateSelects(type==='wp'?'wp':type==='task'?'task':type);
+
+  if(editObj){
+    // Fill form with existing data
+    if(type==='project'){
+      document.getElementById('modal-project-title').innerHTML='<i class="ti ti-edit"></i> Modifica progetto';
+      document.getElementById('np-name').value=editObj.name||'';document.getElementById('np-title').value=editObj.title||'';
+      document.getElementById('np-call').value=editObj.call||'Horizon Europe';document.getElementById('np-topic').value=editObj.topic||'';
+      document.getElementById('np-months').value=editObj.months||36;document.getElementById('np-budget').value=editObj.budget||0;
+      document.getElementById('np-coord').value=editObj.coordinator||'';document.getElementById('np-status').value=editObj.status||'In preparazione';
+    } else if(type==='partner'){
+      document.getElementById('modal-partner-title').innerHTML='<i class="ti ti-edit"></i> Modifica partner';
+      document.getElementById('pp-name').value=editObj.name||'';document.getElementById('pp-acronym').value=editObj.acronym||'';
+      document.getElementById('pp-country').value=editObj.country||'';document.getElementById('pp-type').value=editObj.type||'Altro';
+      document.getElementById('pp-role').value=editObj.role||'Partner';document.getElementById('pp-web').value=editObj.web||'';
+      document.getElementById('pp-notes').value=editObj.notes||'';
+    } else if(type==='contact'){
+      document.getElementById('modal-contact-title').innerHTML='<i class="ti ti-edit"></i> Modifica contatto';
+      document.getElementById('nc-firstname').value=editObj.firstname||'';document.getElementById('nc-lastname').value=editObj.lastname||'';
+      document.getElementById('nc-partner').value=editObj.partner_id||'';document.getElementById('nc-role').value=editObj.role||'';
+      document.getElementById('nc-email').value=editObj.email||'';document.getElementById('nc-phone').value=editObj.phone||'';
+      document.getElementById('nc-orcid').value=editObj.orcid||'';document.getElementById('nc-notes').value=editObj.notes||'';
+    } else if(type==='wp'){
+      document.getElementById('modal-wp-title').innerHTML='<i class="ti ti-edit"></i> Modifica WP';
+      document.getElementById('wp-num').value=editObj.num||'';document.getElementById('wp-title').value=editObj.title||'';
+      document.getElementById('wp-type').value=editObj.type||'RTD';document.getElementById('wp-lead').value=editObj.lead||'';
+      document.getElementById('wp-start').value=editObj.start_month||1;document.getElementById('wp-end').value=editObj.end_month||24;
+      document.getElementById('wp-pm').value=editObj.pm||0;document.getElementById('wp-budget').value=editObj.budget||0;
+      document.getElementById('wp-obj').value=editObj.objectives||'';
+    } else if(type==='task'){
+      document.getElementById('modal-task-title').innerHTML='<i class="ti ti-edit"></i> Modifica task';
+      document.getElementById('tk-id').value=editObj.task_id||'';document.getElementById('tk-title').value=editObj.title||'';
+      document.getElementById('tk-wp').value=editObj.wp_num||'';document.getElementById('tk-lead').value=editObj.lead||'';
+      document.getElementById('tk-pm').value=editObj.pm||0;document.getElementById('tk-status').value=editObj.status||'nuovo';
+      document.getElementById('tk-start').value=editObj.start_month||1;document.getElementById('tk-end').value=editObj.end_month||6;
+      document.getElementById('tk-del').value=editObj.deliverable||'';
+    } else if(type==='ms'){
+      document.getElementById('modal-ms-title').innerHTML='<i class="ti ti-edit"></i> Modifica milestone';
+      document.getElementById('ms-id').value=editObj.ms_id||'';document.getElementById('ms-title').value=editObj.title||'';
+      document.getElementById('ms-wp').value=editObj.wp_num||'';document.getElementById('ms-month').value=editObj.month||1;
+      document.getElementById('ms-verify').value=editObj.verify||'';document.getElementById('ms-status').value=editObj.status||'—';
+    } else if(type==='del'){
+      document.getElementById('modal-del-title').innerHTML='<i class="ti ti-edit"></i> Modifica deliverable';
+      document.getElementById('del-id').value=editObj.del_id||'';document.getElementById('del-title').value=editObj.title||'';
+      document.getElementById('del-wp').value=editObj.wp_num||'';document.getElementById('del-task').value=editObj.task_id||'';
+      document.getElementById('del-month').value=editObj.month||1;document.getElementById('del-type').value=editObj.type||'R';
+      document.getElementById('del-dissem').value=editObj.dissem||'PU';document.getElementById('del-status').value=editObj.status||'—';
+    }
+  } else {
+    // Reset titles for new
+    const titles={project:'<i class="ti ti-folder-plus"></i> Nuovo progetto',partner:'<i class="ti ti-building-plus"></i> Nuovo partner',contact:'<i class="ti ti-user-plus"></i> Nuovo contatto',wp:'<i class="ti ti-folder-plus"></i> Nuovo Work Package',task:'<i class="ti ti-checkbox"></i> Nuovo Task',ms:'<i class="ti ti-flag"></i> Nuova Milestone',del:'<i class="ti ti-file-text"></i> Nuovo Deliverable'};
+    const el=document.getElementById('modal-'+type+'-title');if(el)el.innerHTML=titles[type]||'';
+    // Clear fields
+    const form=document.querySelector('#modal-new-'+type+' .modal-body');
+    if(form)form.querySelectorAll('input:not([type=number]),textarea').forEach(i=>i.value='');
+    if(form)form.querySelectorAll('input[type=number]').forEach(i=>i.value='');
+  }
   document.getElementById(id).style.display='flex';
 }
 function closeModal(id){document.getElementById(id).style.display='none';}
 
-function renderProjectSelect(){
-  const sel=document.getElementById('project-select');
-  sel.innerHTML=projects.map(p=>`<option value="${p.id}"${p.id===currentProjectId?' selected':''}>${p.name}</option>`).join('');
-}
+// PROJECT CRUD
+function renderProjectSelect(){const sel=document.getElementById('project-select');sel.innerHTML=projects.map(p=>`<option value="${p.id}"${p.id===currentProjectId?' selected':''}>${p.name}</option>`).join('');}
 function switchProject(id){currentProjectId=id;renderAll();}
 function renderProjectList(){
   const el=document.getElementById('project-list');
-  if(!projects.length){el.innerHTML='<div class="empty">Nessun progetto. Crea il primo!</div>';return;}
-  el.innerHTML=projects.map(p=>{
-    const pWPs=wps.filter(w=>w.project_id===p.id);
-    const pParts=projectPartners.filter(pp=>pp.project_id===p.id);
+  if(!projects.length){el.innerHTML='<div class="empty">Nessun progetto.</div>';return;}
+  el.innerHTML=projects.map(p=>{const pWPs=wps.filter(w=>w.project_id===p.id);const pP=projectPartners.filter(x=>x.project_id===p.id);
     return `<div class="project-item ${p.id===currentProjectId?'active-proj':''}" onclick="selectAndOpen('${p.id}')">
       <div class="proj-name">${p.name}</div>
       <div class="proj-call">${p.call||''} · ${p.months||36}M · €${Number(p.budget||0).toLocaleString('it')}</div>
-      <div class="proj-meta"><span class="tag">${p.status||'—'}</span><span class="tag">${pWPs.length} WP</span><span class="tag">${pParts.length} partner</span></div>
+      <div class="proj-meta"><span class="tag">${p.status||'—'}</span><span class="tag">${pWPs.length} WP</span><span class="tag">${pP.length} partner</span></div>
+      <div style="margin-top:8px;display:flex;gap:4px">
+        <button class="btn btn-edit btn-sm" onclick="event.stopPropagation();openModal('modal-new-project',${JSON.stringify(p).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteItem('projects','${p.id}','project')"><i class="ti ti-trash"></i></button>
+      </div>
       ${p.id===currentProjectId?'<div style="position:absolute;top:8px;right:8px;font-size:9px;background:var(--gold);color:var(--eu);padding:2px 5px;border-radius:2px;font-weight:700">ATTIVO</div>':''}
-    </div>`;
-  }).join('');
+    </div>`;}).join('');
 }
 function selectAndOpen(id){currentProjectId=id;renderAll();showPage('dashboard');}
-async function saveNewProject(){
-  const p={id:uid(),name:document.getElementById('np-name').value||'NUOVO',title:document.getElementById('np-title').value||'',call:document.getElementById('np-call').value,topic:document.getElementById('np-topic').value||'',months:parseInt(document.getElementById('np-months').value)||36,budget:parseFloat(document.getElementById('np-budget').value)||0,coordinator:document.getElementById('np-coord').value||'',status:document.getElementById('np-status').value};
+async function saveProject(){
+  const data={name:document.getElementById('np-name').value||'NUOVO',title:document.getElementById('np-title').value||'',call:document.getElementById('np-call').value,topic:document.getElementById('np-topic').value||'',months:parseInt(document.getElementById('np-months').value)||36,budget:parseFloat(document.getElementById('np-budget').value)||0,coordinator:document.getElementById('np-coord').value||'',status:document.getElementById('np-status').value};
   setSync('syncing');
-  const {error}=await sb.from('projects').insert(p);
-  if(!error){projects.push(p);currentProjectId=p.id;}
-  setSync(error?'error':'ok');
-  closeModal('modal-new-project');renderAll();showPage('dashboard');
+  if(editingId['project']){
+    await sb.from('projects').update(data).eq('id',editingId['project']);
+    const idx=projects.findIndex(p=>p.id===editingId['project']);if(idx>=0)projects[idx]={...projects[idx],...data};
+  } else {
+    const p={id:uid(),...data};
+    await sb.from('projects').insert(p);projects.push(p);currentProjectId=p.id;
+    await sb.from('project_partners').insert(partners.map(pt=>({project_id:p.id,partner_id:pt.id})));
+    partners.forEach(pt=>projectPartners.push({project_id:p.id,partner_id:pt.id}));
+  }
+  setSync('ok');closeModal('modal-new-project');renderAll();showPage('dashboard');
 }
 
-function getInitials(name){return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+// PARTNER CRUD
+function getInitials(n){return n.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();}
 function pColor(i){const idx=i%COLORS.length;return{bg:COLORS_BG[idx],color:COLORS_TXT[idx]};}
 function renderPartners(){
   const el=document.getElementById('partner-grid');
-  if(!partners.length){el.innerHTML='<div class="empty">Nessun partner nel database</div>';return;}
-  el.innerHTML=partners.map((p,i)=>{const c=pColor(i);const cc=contacts.filter(x=>x.partner_id===p.id).length;const pc=projectPartners.filter(pp=>pp.partner_id===p.id).length;
-    return `<div class="partner-card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div class="partner-initial" style="background:${c.bg};color:${c.color}">${getInitials(p.acronym||p.name)}</div><div><div class="partner-name">${p.acronym||p.name}</div><div class="partner-country">${p.country||'—'} · ${p.type||''}</div></div></div>
-    <div><span class="badge" style="background:${c.bg};color:${c.color}">${p.role||'Partner'}</span></div>
-    <div style="margin-top:6px;font-size:10px;color:var(--muted)">${pc} progetto${pc!==1?'i':''} · ${cc} contatto${cc!==1?'i':''}</div>
-    ${p.notes?`<div style="margin-top:5px;font-size:10px;color:var(--muted);line-height:1.4">${p.notes.slice(0,70)}${p.notes.length>70?'…':''}</div>`:''}
-    <div style="margin-top:8px;display:flex;gap:5px">${p.web?`<a href="${p.web}" target="_blank" class="btn btn-sm"><i class="ti ti-external-link"></i></a>`:''}<button class="btn btn-sm btn-danger" onclick="deletePartner('${p.id}')"><i class="ti ti-trash"></i></button></div>
+  if(!partners.length){el.innerHTML='<div class="empty">Nessun partner.</div>';return;}
+  el.innerHTML=partners.map((p,i)=>{const c=pColor(i);const cc=contacts.filter(x=>x.partner_id===p.id).length;
+    return `<div class="partner-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="partner-initial" style="background:${c.bg};color:${c.color}">${getInitials(p.acronym||p.name)}</div>
+        <div><div style="font-weight:600;font-size:12px;color:var(--eu)">${p.acronym||p.name}</div><div style="font-size:10px;color:var(--muted)">${p.country||'—'} · ${p.type||''}</div></div>
+      </div>
+      <span class="badge" style="background:${c.bg};color:${c.color}">${p.role||'Partner'}</span>
+      <div style="margin-top:5px;font-size:10px;color:var(--muted)">${cc} contatto${cc!==1?'i':''}</div>
+      ${p.notes?`<div style="margin-top:5px;font-size:10px;color:var(--muted);line-height:1.4">${p.notes.slice(0,80)}${p.notes.length>80?'…':''}</div>`:''}
+      <div style="margin-top:8px;display:flex;gap:4px">
+        ${p.web?`<a href="${p.web}" target="_blank" class="btn btn-sm"><i class="ti ti-external-link"></i></a>`:''}
+        <button class="btn btn-edit btn-sm" onclick="openModal('modal-new-partner',${JSON.stringify(p).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('partners','${p.id}','partner')"><i class="ti ti-trash"></i></button>
+      </div>
     </div>`;}).join('');
 }
-async function saveNewPartner(){
-  const p={id:uid(),name:document.getElementById('pp-name').value||'Partner',acronym:document.getElementById('pp-acronym').value||'',country:document.getElementById('pp-country').value||'',type:document.getElementById('pp-type').value,role:document.getElementById('pp-role').value,web:document.getElementById('pp-web').value||'',notes:document.getElementById('pp-notes').value||''};
+async function savePartner(){
+  const data={name:document.getElementById('pp-name').value||'Partner',acronym:document.getElementById('pp-acronym').value||'',country:document.getElementById('pp-country').value||'',type:document.getElementById('pp-type').value,role:document.getElementById('pp-role').value,web:document.getElementById('pp-web').value||'',notes:document.getElementById('pp-notes').value||''};
   setSync('syncing');
-  const {error}=await sb.from('partners').insert(p);
-  if(!error){partners.push(p);
+  if(editingId['partner']){
+    await sb.from('partners').update(data).eq('id',editingId['partner']);
+    const idx=partners.findIndex(p=>p.id===editingId['partner']);if(idx>=0)partners[idx]={...partners[idx],...data};
+  } else {
+    const p={id:uid(),...data};await sb.from('partners').insert(p);partners.push(p);
     if(currentProjectId){await sb.from('project_partners').insert({project_id:currentProjectId,partner_id:p.id});projectPartners.push({project_id:currentProjectId,partner_id:p.id});}
   }
-  setSync(error?'error':'ok');
-  closeModal('modal-new-partner');renderAll();
+  setSync('ok');closeModal('modal-new-partner');renderAll();
 }
-async function deletePartner(id){if(!confirm('Eliminare questo partner?'))return;setSync('syncing');await sb.from('partners').delete().eq('id',id);partners=partners.filter(p=>p.id!==id);setSync('ok');renderPartners();}
 
+// CONTACT CRUD
 function renderContacts(){
   const search=(document.getElementById('contact-search')?.value||'').toLowerCase();
   const el=document.getElementById('contact-list');
   let list=contacts.filter(c=>{if(!search)return true;const pt=partners.find(p=>p.id===c.partner_id);return(c.firstname+' '+c.lastname+' '+(c.role||'')+' '+(pt?.name||'')+' '+(pt?.acronym||'')).toLowerCase().includes(search);});
-  if(!list.length){el.innerHTML='<div class="empty">Nessun contatto trovato</div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty">Nessun contatto trovato.</div>';return;}
   el.innerHTML=list.map((c,i)=>{const pt=partners.find(p=>p.id===c.partner_id);const col=pColor(i);
-    return `<div class="contact-card"><div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><div class="partner-initial" style="background:${col.bg};color:${col.color};width:34px;height:34px;font-size:12px">${c.firstname?c.firstname[0]:''}${c.lastname?c.lastname[0]:''}</div><div><div class="contact-name">${c.firstname} ${c.lastname}</div><div class="contact-role">${c.role||''}</div></div></div>
-    ${pt?`<div style="margin-bottom:6px"><span class="badge badge-partner">${pt.acronym||pt.name}</span></div>`:''}
-    <div class="contact-info">${c.email?`<div><i class="ti ti-mail" style="font-size:12px;margin-right:3px"></i><a href="mailto:${c.email}">${c.email}</a></div>`:''}${c.phone?`<div><i class="ti ti-phone" style="font-size:12px;margin-right:3px"></i>${c.phone}</div>`:''}${c.orcid?`<div><i class="ti ti-link" style="font-size:12px;margin-right:3px"></i><a href="${c.orcid}" target="_blank">ORCID</a></div>`:''}</div>
-    ${c.notes?`<div style="margin-top:6px;font-size:10px;color:var(--muted);line-height:1.4">${c.notes.slice(0,80)}${c.notes.length>80?'…':''}</div>`:''}
-    <div style="margin-top:8px"><button class="btn btn-sm btn-danger" onclick="deleteContact('${c.id}')"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
+    return `<div class="contact-card">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+        <div class="partner-initial" style="background:${col.bg};color:${col.color};width:34px;height:34px;font-size:12px">${c.firstname?c.firstname[0]:''}${c.lastname?c.lastname[0]:''}</div>
+        <div><div style="font-weight:600;font-size:12px">${c.firstname} ${c.lastname}</div><div style="font-size:11px;color:var(--muted)">${c.role||''}</div></div>
+      </div>
+      ${pt?`<div style="margin-bottom:6px"><span class="badge badge-partner">${pt.acronym||pt.name}</span></div>`:''}
+      <div class="contact-info" style="font-size:11px">
+        ${c.email?`<div><i class="ti ti-mail" style="font-size:11px;margin-right:3px"></i><a href="mailto:${c.email}">${c.email}</a></div>`:''}
+        ${c.phone?`<div><i class="ti ti-phone" style="font-size:11px;margin-right:3px"></i>${c.phone}</div>`:''}
+        ${c.orcid?`<div><i class="ti ti-link" style="font-size:11px;margin-right:3px"></i><a href="${c.orcid}" target="_blank">ORCID</a></div>`:''}
+      </div>
+      ${c.notes?`<div style="margin-top:5px;font-size:10px;color:var(--muted);line-height:1.4">${c.notes.slice(0,80)}${c.notes.length>80?'…':''}</div>`:''}
+      <div style="margin-top:8px;display:flex;gap:4px">
+        <button class="btn btn-edit btn-sm" onclick="openModal('modal-new-contact',${JSON.stringify(c).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('contacts','${c.id}','contact')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;}).join('');
 }
-async function saveNewContact(){
-  const c={id:uid(),firstname:document.getElementById('nc-firstname').value||'',lastname:document.getElementById('nc-lastname').value||'',partner_id:document.getElementById('nc-partner').value||null,role:document.getElementById('nc-role').value||'',email:document.getElementById('nc-email').value||'',phone:document.getElementById('nc-phone').value||'',orcid:document.getElementById('nc-orcid').value||'',notes:document.getElementById('nc-notes').value||''};
-  setSync('syncing');const {error}=await sb.from('contacts').insert(c);
-  if(!error)contacts.push(c);setSync(error?'error':'ok');closeModal('modal-new-contact');renderContacts();
+async function saveContact(){
+  const data={firstname:document.getElementById('nc-firstname').value||'',lastname:document.getElementById('nc-lastname').value||'',partner_id:document.getElementById('nc-partner').value||null,role:document.getElementById('nc-role').value||'',email:document.getElementById('nc-email').value||'',phone:document.getElementById('nc-phone').value||'',orcid:document.getElementById('nc-orcid').value||'',notes:document.getElementById('nc-notes').value||''};
+  setSync('syncing');
+  if(editingId['contact']){
+    await sb.from('contacts').update(data).eq('id',editingId['contact']);
+    const idx=contacts.findIndex(c=>c.id===editingId['contact']);if(idx>=0)contacts[idx]={...contacts[idx],...data};
+  } else {
+    const c={id:uid(),...data};await sb.from('contacts').insert(c);contacts.push(c);
+  }
+  setSync('ok');closeModal('modal-new-contact');renderContacts();
 }
-async function deleteContact(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('contacts').delete().eq('id',id);contacts=contacts.filter(c=>c.id!==id);setSync('ok');renderContacts();}
 
-function renderDashboard(){
-  const p=currentProject();if(!p)return;
-  const pWPs=wps.filter(w=>w.project_id===p.id);
-  const pParts=projectPartners.filter(pp=>pp.project_id===p.id);
-  const totalPM=pWPs.reduce((a,w)=>a+(w.pm||0),0);
-  document.getElementById('dash-title').textContent='Dashboard — '+p.name;
-  document.getElementById('stat-wp').textContent=pWPs.length;
-  document.getElementById('stat-budget').textContent='€'+Number(p.budget||0).toLocaleString('it');
-  document.getElementById('stat-pm').textContent=totalPM;
-  document.getElementById('stat-partners').textContent=pParts.length;
-  document.getElementById('dash-wp-table').innerHTML=`<thead><tr><th>WP</th><th>Titolo</th><th>Lead</th><th>PM</th></tr></thead><tbody>${pWPs.map(w=>`<tr><td><span class="badge badge-wp">${w.num}</span></td><td>${w.title}</td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">${w.pm||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun WP</td></tr>'}</tbody>`;
-  const pDels=deliverables.filter(d=>d.project_id===p.id).sort((a,b)=>(a.month||99)-(b.month||99)).slice(0,6);
-  const sc={'on track':'badge-ok','at risk':'badge-risk','consegnato':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
-  document.getElementById('dash-del-table').innerHTML=`<thead><tr><th>ID</th><th>Titolo</th><th>Mese</th><th>Stato</th></tr></thead><tbody>${pDels.map(d=>`<tr><td><span class="badge badge-del">${d.del_id}</span></td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title}</td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun deliverable</td></tr>'}</tbody>`;
-}
-
+// WP CRUD
 function renderWPs(){
   const tbody=document.getElementById('wp-table-body');
   const pWPs=wps.filter(w=>w.project_id===currentProjectId);
   if(!pWPs.length){tbody.innerHTML='<tr><td colspan="9" class="empty">Nessun WP.</td></tr>';return;}
-  tbody.innerHTML=pWPs.map((w,i)=>`<tr><td><div style="display:flex;align-items:center;gap:5px"><div style="width:3px;height:20px;border-radius:2px;background:${COLORS[i%COLORS.length]}"></div><span class="badge badge-wp">${w.num}</span></div></td><td><strong>${w.title}</strong></td><td><span class="tag">${w.type}</span></td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">M${w.start_month}</td><td style="font-family:var(--mono)">M${w.end_month}</td><td style="font-family:var(--mono);font-weight:600">${w.pm||0}</td><td style="font-family:var(--mono)">€${Number(w.budget||0).toLocaleString('it')}</td><td><button class="btn btn-sm btn-danger" onclick="deleteWP('${w.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
+  tbody.innerHTML=pWPs.map((w,i)=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:5px"><div style="width:3px;height:20px;border-radius:2px;background:${COLORS[i%COLORS.length]}"></div><span class="badge badge-wp">${w.num}</span></div></td>
+    <td><strong>${w.title}</strong>${w.objectives?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${w.objectives.slice(0,60)}…</div>`:''}</td>
+    <td><span class="tag">${w.type}</span></td><td><span class="tag">${w.lead||'—'}</span></td>
+    <td style="font-family:var(--mono)">M${w.start_month}</td><td style="font-family:var(--mono)">M${w.end_month}</td>
+    <td style="font-family:var(--mono);font-weight:600">${w.pm||0}</td>
+    <td style="font-family:var(--mono)">€${Number(w.budget||0).toLocaleString('it')}</td>
+    <td><div class="action-btns">
+      <button class="btn btn-edit btn-sm" onclick="openModal('modal-new-wp',${JSON.stringify(w).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="deleteItem('work_packages','${w.id}','wp')"><i class="ti ti-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
 }
-async function saveNewWP(){
+async function saveWP(){
   if(!currentProjectId)return;
-  const w={id:uid(),project_id:currentProjectId,num:document.getElementById('wp-num').value||'WP?',title:document.getElementById('wp-title').value||'',type:document.getElementById('wp-type').value,lead:document.getElementById('wp-lead').value,start_month:parseInt(document.getElementById('wp-start').value)||1,end_month:parseInt(document.getElementById('wp-end').value)||36,pm:parseInt(document.getElementById('wp-pm').value)||0,budget:parseFloat(document.getElementById('wp-budget').value)||0,objectives:document.getElementById('wp-obj').value||''};
-  setSync('syncing');const {error}=await sb.from('work_packages').insert(w);
-  if(!error)wps.push(w);setSync(error?'error':'ok');closeModal('modal-new-wp');renderWPs();renderDashboard();renderPM();
+  const data={num:document.getElementById('wp-num').value||'WP?',title:document.getElementById('wp-title').value||'',type:document.getElementById('wp-type').value,lead:document.getElementById('wp-lead').value,start_month:parseInt(document.getElementById('wp-start').value)||1,end_month:parseInt(document.getElementById('wp-end').value)||24,pm:parseInt(document.getElementById('wp-pm').value)||0,budget:parseFloat(document.getElementById('wp-budget').value)||0,objectives:document.getElementById('wp-obj').value||''};
+  setSync('syncing');
+  if(editingId['wp']){
+    await sb.from('work_packages').update(data).eq('id',editingId['wp']);
+    const idx=wps.findIndex(w=>w.id===editingId['wp']);if(idx>=0)wps[idx]={...wps[idx],...data};
+  } else {
+    const w={id:uid(),project_id:currentProjectId,...data};await sb.from('work_packages').insert(w);wps.push(w);
+  }
+  setSync('ok');closeModal('modal-new-wp');renderWPs();renderDashboard();renderPM();
 }
-async function deleteWP(id){if(!confirm('Eliminare questo WP?'))return;setSync('syncing');await sb.from('work_packages').delete().eq('id',id);wps=wps.filter(w=>w.id!==id);setSync('ok');renderWPs();renderDashboard();}
 
+// TASK CRUD
 function renderTasks(){
   const tbody=document.getElementById('task-table-body');
-  const pTasks=tasks.filter(t=>t.project_id===currentProjectId);
-  if(!pTasks.length){tbody.innerHTML='<tr><td colspan="10" class="empty">Nessun task.</td></tr>';return;}
+  const pT=tasks.filter(t=>t.project_id===currentProjectId);
+  if(!pT.length){tbody.innerHTML='<tr><td colspan="10" class="empty">Nessun task.</td></tr>';return;}
   const sc={'completato':'badge-ok','in corso':'badge-new','a rischio':'badge-risk','in ritardo':'badge-late','nuovo':'badge-new'};
-  tbody.innerHTML=pTasks.map(t=>`<tr><td style="font-family:var(--mono);font-size:11px">${t.task_id}</td><td><strong>${t.title}</strong></td><td><span class="badge badge-wp">${t.wp_num}</span></td><td><span class="tag">${t.lead||'—'}</span></td><td style="font-family:var(--mono)">${t.pm||0}</td><td style="font-family:var(--mono)">M${t.start_month}</td><td style="font-family:var(--mono)">M${t.end_month}</td><td>${t.deliverable?`<span class="badge badge-del">${t.deliverable}</span>`:'—'}</td><td><span class="badge ${sc[t.status]||'badge-new'}">${t.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteTask('${t.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
+  tbody.innerHTML=pT.map(t=>`<tr>
+    <td style="font-family:var(--mono);font-size:11px">${t.task_id}</td>
+    <td><strong>${t.title}</strong></td>
+    <td><span class="badge badge-wp">${t.wp_num}</span></td>
+    <td><span class="tag">${t.lead||'—'}</span></td>
+    <td style="font-family:var(--mono)">${t.pm||0}</td>
+    <td style="font-family:var(--mono)">M${t.start_month}</td>
+    <td style="font-family:var(--mono)">M${t.end_month}</td>
+    <td>${t.deliverable?`<span class="badge badge-del">${t.deliverable}</span>`:'—'}</td>
+    <td><span class="badge ${sc[t.status]||'badge-new'}">${t.status||'—'}</span></td>
+    <td><div class="action-btns">
+      <button class="btn btn-edit btn-sm" onclick="openModal('modal-new-task',${JSON.stringify(t).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="deleteItem('tasks','${t.id}','task')"><i class="ti ti-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
 }
-async function saveNewTask(){
+async function saveTask(){
   if(!currentProjectId)return;
-  const t={id:uid(),project_id:currentProjectId,task_id:document.getElementById('tk-id').value||'T?',title:document.getElementById('tk-title').value||'',wp_num:document.getElementById('tk-wp').value,lead:document.getElementById('tk-lead').value,pm:parseInt(document.getElementById('tk-pm').value)||0,status:document.getElementById('tk-status').value,start_month:parseInt(document.getElementById('tk-start').value)||1,end_month:parseInt(document.getElementById('tk-end').value)||12,deliverable:document.getElementById('tk-del').value||''};
-  setSync('syncing');const {error}=await sb.from('tasks').insert(t);
-  if(!error)tasks.push(t);setSync(error?'error':'ok');closeModal('modal-new-task');renderTasks();renderPM();
+  const data={task_id:document.getElementById('tk-id').value||'T?',title:document.getElementById('tk-title').value||'',wp_num:document.getElementById('tk-wp').value,lead:document.getElementById('tk-lead').value,pm:parseInt(document.getElementById('tk-pm').value)||0,status:document.getElementById('tk-status').value,start_month:parseInt(document.getElementById('tk-start').value)||1,end_month:parseInt(document.getElementById('tk-end').value)||6,deliverable:document.getElementById('tk-del').value||''};
+  setSync('syncing');
+  if(editingId['task']){
+    await sb.from('tasks').update(data).eq('id',editingId['task']);
+    const idx=tasks.findIndex(t=>t.id===editingId['task']);if(idx>=0)tasks[idx]={...tasks[idx],...data};
+  } else {
+    const t={id:uid(),project_id:currentProjectId,...data};await sb.from('tasks').insert(t);tasks.push(t);
+  }
+  setSync('ok');closeModal('modal-new-task');renderTasks();renderPM();
 }
-async function deleteTask(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('tasks').delete().eq('id',id);tasks=tasks.filter(t=>t.id!==id);setSync('ok');renderTasks();}
 
+// MILESTONE CRUD
+function renderMilestones(){
+  const tbody=document.getElementById('ms-table-body');
+  const pMS=milestones.filter(m=>m.project_id===currentProjectId).sort((a,b)=>(a.month||99)-(b.month||99));
+  const sc={'on track':'badge-ok','at risk':'badge-risk','completata':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
+  if(!pMS.length){tbody.innerHTML='<tr><td colspan="7" class="empty">Nessuna milestone.</td></tr>';return;}
+  tbody.innerHTML=pMS.map(m=>`<tr>
+    <td><span class="badge badge-ms">${m.ms_id}</span></td><td>${m.title}</td>
+    <td><span class="badge badge-wp">${m.wp_num}</span></td>
+    <td style="font-family:var(--mono)">M${m.month}</td><td>${m.verify||'—'}</td>
+    <td><span class="badge ${sc[m.status]||'badge-new'}">${m.status||'—'}</span></td>
+    <td><div class="action-btns">
+      <button class="btn btn-edit btn-sm" onclick="openModal('modal-new-ms',${JSON.stringify(m).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="deleteItem('milestones','${m.id}','ms')"><i class="ti ti-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
+}
+async function saveMS(){
+  if(!currentProjectId)return;
+  const data={ms_id:document.getElementById('ms-id').value,title:document.getElementById('ms-title').value,wp_num:document.getElementById('ms-wp').value,month:parseInt(document.getElementById('ms-month').value)||1,verify:document.getElementById('ms-verify').value,status:document.getElementById('ms-status').value};
+  setSync('syncing');
+  if(editingId['ms']){
+    await sb.from('milestones').update(data).eq('id',editingId['ms']);
+    const idx=milestones.findIndex(m=>m.id===editingId['ms']);if(idx>=0)milestones[idx]={...milestones[idx],...data};
+  } else {
+    const m={id:uid(),project_id:currentProjectId,...data};await sb.from('milestones').insert(m);milestones.push(m);
+  }
+  setSync('ok');closeModal('modal-new-ms');renderMilestones();
+}
+
+// DELIVERABLE CRUD
+function renderDeliverables(){
+  const tbody=document.getElementById('del-table-body');
+  const pD=deliverables.filter(d=>d.project_id===currentProjectId).sort((a,b)=>(a.month||99)-(b.month||99));
+  const sc={'on track':'badge-ok','at risk':'badge-risk','consegnato':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
+  if(!pD.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nessun deliverable.</td></tr>';return;}
+  tbody.innerHTML=pD.map(d=>`<tr>
+    <td><span class="badge badge-del">${d.del_id}</span></td><td>${d.title}</td>
+    <td><span class="badge badge-wp">${d.wp_num}</span></td>
+    <td style="font-family:var(--mono)">M${d.month}</td>
+    <td><span class="tag">${d.type}</span></td>
+    <td style="font-size:11px;color:var(--muted)">${d.task_id||'—'}</td>
+    <td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td>
+    <td><div class="action-btns">
+      <button class="btn btn-edit btn-sm" onclick="openModal('modal-new-del',${JSON.stringify(d).replace(/"/g,'&quot;')})"><i class="ti ti-edit"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="deleteItem('deliverables','${d.id}','del')"><i class="ti ti-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
+}
+async function saveDel(){
+  if(!currentProjectId)return;
+  const data={del_id:document.getElementById('del-id').value,title:document.getElementById('del-title').value,wp_num:document.getElementById('del-wp').value,task_id:document.getElementById('del-task').value||null,month:parseInt(document.getElementById('del-month').value)||1,type:document.getElementById('del-type').value,dissem:document.getElementById('del-dissem').value,status:document.getElementById('del-status').value};
+  setSync('syncing');
+  if(editingId['del']){
+    await sb.from('deliverables').update(data).eq('id',editingId['del']);
+    const idx=deliverables.findIndex(d=>d.id===editingId['del']);if(idx>=0)deliverables[idx]={...deliverables[idx],...data};
+  } else {
+    const d={id:uid(),project_id:currentProjectId,...data};await sb.from('deliverables').insert(d);deliverables.push(d);
+  }
+  setSync('ok');closeModal('modal-new-del');renderDeliverables();renderDashboard();
+}
+
+// GENERIC DELETE
+async function deleteItem(table,id,type){
+  if(!confirm('Eliminare questo elemento?'))return;
+  setSync('syncing');await sb.from(table).delete().eq('id',id);
+  if(type==='project'){projects=projects.filter(p=>p.id!==id);if(currentProjectId===id)currentProjectId=projects[0]?.id||null;}
+  else if(type==='partner')partners=partners.filter(p=>p.id!==id);
+  else if(type==='contact')contacts=contacts.filter(c=>c.id!==id);
+  else if(type==='wp')wps=wps.filter(w=>w.id!==id);
+  else if(type==='task')tasks=tasks.filter(t=>t.id!==id);
+  else if(type==='ms')milestones=milestones.filter(m=>m.id!==id);
+  else if(type==='del')deliverables=deliverables.filter(d=>d.id!==id);
+  setSync('ok');renderAll();
+}
+
+// DASHBOARD
+function renderDashboard(){
+  const p=cp();if(!p)return;
+  const pWPs=wps.filter(w=>w.project_id===p.id);
+  const pP=projectPartners.filter(x=>x.project_id===p.id);
+  document.getElementById('dash-title').textContent='Dashboard — '+p.name;
+  document.getElementById('stat-wp').textContent=pWPs.length;
+  document.getElementById('stat-budget').textContent='€'+Number(p.budget||0).toLocaleString('it');
+  document.getElementById('stat-pm').textContent=pWPs.reduce((a,w)=>a+(w.pm||0),0);
+  document.getElementById('stat-partners').textContent=pP.length;
+  document.getElementById('dash-wp-table').innerHTML=`<thead><tr><th>WP</th><th>Titolo</th><th>Lead</th><th>PM</th></tr></thead><tbody>${pWPs.map(w=>`<tr><td><span class="badge badge-wp">${w.num}</span></td><td>${w.title}</td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">${w.pm||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun WP</td></tr>'}</tbody>`;
+  const pD=deliverables.filter(d=>d.project_id===p.id).sort((a,b)=>(a.month||99)-(b.month||99)).slice(0,6);
+  const sc={'on track':'badge-ok','at risk':'badge-risk','consegnato':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
+  document.getElementById('dash-del-table').innerHTML=`<thead><tr><th>ID</th><th>Titolo</th><th>Mese</th><th>Stato</th></tr></thead><tbody>${pD.map(d=>`<tr><td><span class="badge badge-del">${d.del_id}</span></td><td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title}</td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun deliverable</td></tr>'}</tbody>`;
+}
+
+// PM MATRIX
 function renderPM(){
   const el=document.getElementById('pm-matrix');
   const pWPs=wps.filter(w=>w.project_id===currentProjectId);
-  const pParts=projectPartners.filter(pp=>pp.project_id===currentProjectId).map(pp=>partners.find(p=>p.id===pp.partner_id)).filter(Boolean);
-  if(!pParts.length||!pWPs.length){el.innerHTML='<div class="empty">Aggiungi WP e partner per vedere la matrice PM</div>';return;}
-  let html=`<table class="data-table"><thead><tr><th>Partner</th>${pWPs.map(w=>`<th>${w.num}</th>`).join('')}<th>Totale PM</th><th>Budget pers. (€)</th></tr></thead><tbody>`;
-  let colTotals=pWPs.map(()=>0),grandTotal=0;
-  pParts.forEach(pt=>{const ptTasks=tasks.filter(t=>t.project_id===currentProjectId&&t.lead===(pt.acronym||pt.name));const pmPerWP=pWPs.map(w=>ptTasks.filter(t=>t.wp_num===w.num).reduce((a,t)=>a+(t.pm||0),0));const total=pmPerWP.reduce((a,v)=>a+v,0);grandTotal+=total;pmPerWP.forEach((v,i)=>colTotals[i]+=v);
-    html+=`<tr><td><strong>${pt.acronym||pt.name}</strong></td>${pmPerWP.map(v=>`<td style="font-family:var(--mono)">${v||0}</td>`).join('')}<td style="font-family:var(--mono);font-weight:700">${total}</td><td style="font-family:var(--mono)">€${(total*6000).toLocaleString('it')}</td></tr>`;});
-  html+=`<tr style="background:#eef2fb;font-weight:700"><td>TOTALE</td>${colTotals.map(v=>`<td style="font-family:var(--mono);color:var(--eu)">${v}</td>`).join('')}<td style="font-family:var(--mono);color:var(--eu)">${grandTotal}</td><td style="font-family:var(--mono);color:var(--eu)">€${(grandTotal*6000).toLocaleString('it')}</td></tr></tbody></table><div style="padding:10px 14px;font-size:10px;color:var(--muted)">PM calcolati dalle tasks assegnate. Tasso medio: €6.000/PM.</div>`;
+  const pParts=projectPartners.filter(x=>x.project_id===currentProjectId).map(x=>partners.find(p=>p.id===x.partner_id)).filter(Boolean);
+  if(!pParts.length||!pWPs.length){el.innerHTML='<div class="empty">Aggiungi WP e partner per la matrice PM</div>';return;}
+  let html=`<table class="data-table"><thead><tr><th>Partner</th>${pWPs.map(w=>`<th>${w.num}</th>`).join('')}<th>Tot. PM</th><th>Budget pers.</th></tr></thead><tbody>`;
+  let colT=pWPs.map(()=>0),gT=0;
+  pParts.forEach(pt=>{const ptT=tasks.filter(t=>t.project_id===currentProjectId&&t.lead===(pt.acronym||pt.name));const pmW=pWPs.map(w=>ptT.filter(t=>t.wp_num===w.num).reduce((a,t)=>a+(t.pm||0),0));const tot=pmW.reduce((a,v)=>a+v,0);gT+=tot;pmW.forEach((v,i)=>colT[i]+=v);
+    html+=`<tr><td><strong>${pt.acronym||pt.name}</strong></td>${pmW.map(v=>`<td style="font-family:var(--mono)">${v||0}</td>`).join('')}<td style="font-family:var(--mono);font-weight:700">${tot}</td><td style="font-family:var(--mono)">€${(tot*6000).toLocaleString('it')}</td></tr>`;});
+  html+=`<tr style="background:#eef2fb;font-weight:700"><td>TOTALE</td>${colT.map(v=>`<td style="font-family:var(--mono);color:var(--eu)">${v}</td>`).join('')}<td style="font-family:var(--mono);color:var(--eu)">${gT}</td><td style="font-family:var(--mono);color:var(--eu)">€${(gT*6000).toLocaleString('it')}</td></tr></tbody></table>`;
   el.innerHTML=html;
 }
 
+// BUDGET
 function renderBudget(){
   const el=document.getElementById('budget-table');
   const pWPs=wps.filter(w=>w.project_id===currentProjectId);
@@ -613,41 +808,13 @@ function renderBudget(){
   el.innerHTML=html;
 }
 
-function renderMilestones(){
-  const tbody=document.getElementById('ms-table-body');
-  const pMS=milestones.filter(m=>m.project_id===currentProjectId).sort((a,b)=>(a.month||99)-(b.month||99));
-  const sc={'on track':'badge-ok','at risk':'badge-risk','completata':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
-  if(!pMS.length){tbody.innerHTML='<tr><td colspan="7" class="empty">Nessuna milestone.</td></tr>';return;}
-  tbody.innerHTML=pMS.map(m=>`<tr><td><span class="badge badge-ms">${m.ms_id}</span></td><td>${m.title}</td><td><span class="badge badge-wp">${m.wp_num}</span></td><td style="font-family:var(--mono)">M${m.month}</td><td>${m.verify||'—'}</td><td><span class="badge ${sc[m.status]||'badge-new'}">${m.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteMS('${m.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
-}
-async function saveNewMS(){
-  if(!currentProjectId)return;
-  const m={id:uid(),project_id:currentProjectId,ms_id:document.getElementById('ms-id').value,title:document.getElementById('ms-title').value,wp_num:document.getElementById('ms-wp').value,month:parseInt(document.getElementById('ms-month').value)||1,verify:document.getElementById('ms-verify').value,status:document.getElementById('ms-status').value};
-  setSync('syncing');const {error}=await sb.from('milestones').insert(m);
-  if(!error)milestones.push(m);setSync(error?'error':'ok');closeModal('modal-new-ms');renderMilestones();
-}
-async function deleteMS(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('milestones').delete().eq('id',id);milestones=milestones.filter(m=>m.id!==id);setSync('ok');renderMilestones();}
-
-function renderDeliverables(){
-  const tbody=document.getElementById('del-table-body');
-  const pDels=deliverables.filter(d=>d.project_id===currentProjectId).sort((a,b)=>(a.month||99)-(b.month||99));
-  const sc={'on track':'badge-ok','at risk':'badge-risk','consegnato':'badge-ok','in ritardo':'badge-late','—':'badge-new'};
-  if(!pDels.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nessun deliverable.</td></tr>';return;}
-  tbody.innerHTML=pDels.map(d=>`<tr><td><span class="badge badge-del">${d.del_id}</span></td><td>${d.title}</td><td><span class="badge badge-wp">${d.wp_num}</span></td><td style="font-family:var(--mono)">M${d.month}</td><td><span class="tag">${d.type}</span></td><td style="font-size:11px;color:var(--muted)">${d.task_id||'—'}</td><td><span class="badge ${sc[d.status]||'badge-new'}">${d.status||'—'}</span></td><td><button class="btn btn-sm btn-danger" onclick="deleteDel('${d.id}')"><i class="ti ti-trash"></i></button></td></tr>`).join('');
-}
-async function saveNewDel(){
-  if(!currentProjectId)return;
-  const d={id:uid(),project_id:currentProjectId,del_id:document.getElementById('del-id').value,title:document.getElementById('del-title').value,wp_num:document.getElementById('del-wp').value,task_id:document.getElementById('del-task').value||null,month:parseInt(document.getElementById('del-month').value)||1,type:document.getElementById('del-type').value,dissem:document.getElementById('del-dissem').value,status:document.getElementById('del-status').value};
-  setSync('syncing');const {error}=await sb.from('deliverables').insert(d);
-  if(!error)deliverables.push(d);setSync(error?'error':'ok');closeModal('modal-new-del');renderDeliverables();renderDashboard();
-}
-async function deleteDel(id){if(!confirm('Eliminare?'))return;setSync('syncing');await sb.from('deliverables').delete().eq('id',id);deliverables=deliverables.filter(d=>d.id!==id);setSync('ok');renderDeliverables();}
-
+// AI
 async function askAI(prompt){
+  showPage('ai');
   const input=document.getElementById('ai-input');const resp=document.getElementById('ai-response');const loading=document.getElementById('ai-loading');
   const text=prompt||input.value.trim();if(!text)return;
   input.value='';loading.style.display='block';resp.style.display='none';resp.textContent='';
-  const sys=`Sei un esperto di progettazione europea con 15 anni di esperienza in Horizon Europe, EUI Urban Innovation, LIFE, Interreg. Conosci i template CE, regole di ammissibilità, struttura WP, person months, budget categories A-D, milestones, deliverables. Rispondi in italiano. Usa linguaggio tecnico dei bandi europei. Formatta con tabelle quando utile.`;
+  const sys=`Sei un esperto di progettazione europea con 15 anni di esperienza in EUI Urban Innovation, Horizon Europe, LIFE, Interreg. Conosci perfettamente i template CE, regole di ammissibilità EUI, struttura WP, person months, budget categories A-D, milestones, deliverables, State Aid, New European Bauhaus, SROI. Il progetto corrente si chiama HOLA (Housing and Opportunity through Local Alliances), bando EUI Urban Innovation Call 4, Topic 4 Affordable Housing, coordinato dal Comune di Isernia con il Comune di Venafro come AUA. Budget 2.5M€ (2M FESR + 0.5M cofinanziamento), 24 mesi. Partner: Homes4All, Fondazione Impact Housing, UniMol, ASEC Confesercenti, MARA HR Croazia, CC Kilkis Grecia, Innovasturias Spagna. Modello Social Leasing: immobili pubblici assegnati a canone ridotto/zero in cambio di servizi sociali misurabili. Rispondi in italiano. Usa linguaggio tecnico dei bandi europei. Formatta con tabelle quando utile.`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys,messages:[{role:'user',content:text}]})});
     const data=await res.json();
