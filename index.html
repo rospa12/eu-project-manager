@@ -144,44 +144,44 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 </div>
 <div class="layout">
 <div class="sidebar">
-  <div class="nav-label">Generale</div>
-  <div class="nav-item active" onclick="showPage('projects')"><i class="ti ti-layout-grid"></i> Progetti</div>
-  <div class="nav-item" onclick="showPage('partners')"><i class="ti ti-building"></i> Partner DB</div>
-  <div class="nav-item" onclick="showPage('contacts')"><i class="ti ti-address-book"></i> Contatti</div>
-  <div class="nav-label">Progetto corrente</div>
+  <div class="nav-label" data-it="Generale" data-en="General">Generale</div>
+  <div class="nav-item active" onclick="showPage('projects')"><i class="ti ti-layout-grid"></i> <span data-it="Progetti" data-en="Projects">Progetti</span></div>
+  <div class="nav-item" onclick="showPage('partners')"><i class="ti ti-building"></i> <span data-it="Partner DB" data-en="Partner DB">Partner DB</span></div>
+  <div class="nav-item" onclick="showPage('contacts')"><i class="ti ti-address-book"></i> <span data-it="Contatti" data-en="Contacts">Contatti</span></div>
+  <div class="nav-label" data-it="Progetto corrente" data-en="Current project">Progetto corrente</div>
   <div class="nav-item" onclick="showPage('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
   <div class="nav-item" onclick="showPage('workpackages')"><i class="ti ti-folders"></i> Work Packages</div>
-  <div class="nav-item" onclick="showPage('tasks')"><i class="ti ti-checklist"></i> Tasks & PM</div>
-  <div class="nav-label">Pianificazione</div>
-  <div class="nav-item" onclick="showPage('pmmatrix')"><i class="ti ti-table"></i> Matrice PM</div>
+  <div class="nav-item" onclick="showPage('tasks')"><i class="ti ti-checklist"></i> <span data-it="Tasks & PM" data-en="Tasks & PM">Tasks & PM</span></div>
+  <div class="nav-label" data-it="Pianificazione" data-en="Planning">Pianificazione</div>
+  <div class="nav-item" onclick="showPage('pmmatrix')"><i class="ti ti-table"></i> <span data-it="Matrice PM" data-en="PM Matrix">Matrice PM</span></div>
   <div class="nav-item" onclick="showPage('budget')"><i class="ti ti-coins"></i> Budget</div>
-  <div class="nav-item" onclick="showPage('milestones')"><i class="ti ti-flag"></i> Milestones & Del.</div>
+  <div class="nav-item" onclick="showPage('milestones')"><i class="ti ti-flag"></i> <span data-it="Milestones & Del." data-en="Milestones & Del.">Milestones & Del.</span></div>
   <div class="nav-item" onclick="showPage('gantt')"><i class="ti ti-timeline"></i> Gantt</div>
-  <div class="nav-item" onclick="showPage('compatibility')"><i class="ti ti-checklist"></i> Compatibilità</div>
-  <div class="nav-item" onclick="showPage('share')"><i class="ti ti-share"></i> Condividi</div>
-  <div class="nav-label">Strumenti</div>
-  <div class="nav-item" onclick="showPage('ai')"><i class="ti ti-sparkles"></i> Assistente AI</div>
-  <div class="nav-item" onclick="showPage('export')"><i class="ti ti-file-export"></i> Esporta</div>
+  <div class="nav-item" onclick="showPage('compatibility')"><i class="ti ti-checklist"></i> <span data-it="Compatibilità" data-en="Compatibility">Compatibilità</span></div>
+  <div class="nav-item" onclick="showPage('share')"><i class="ti ti-share"></i> <span data-it="Condividi" data-en="Share">Condividi</span></div>
+  <div class="nav-label" data-it="Strumenti" data-en="Tools">Strumenti</div>
+  <div class="nav-item" onclick="showPage('ai')"><i class="ti ti-sparkles"></i> <span data-it="Assistente AI" data-en="AI Assistant">Assistente AI</span></div>
+  <div class="nav-item" onclick="showPage('export')"><i class="ti ti-file-export"></i> <span data-it="Esporta" data-en="Export">Esporta</span></div>
 </div>
 <div class="main">
 
 <!-- PROJECTS -->
 <div class="page active" id="page-projects">
-  <div class="page-title">I miei progetti</div>
+  <div class="page-title" data-it="I miei progetti" data-en="My projects">I miei progetti</div>
   <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-project')"><i class="ti ti-plus"></i> Nuovo progetto</button></div>
   <div class="project-list" id="project-list"></div>
 </div>
 
 <!-- PARTNERS -->
 <div class="page" id="page-partners">
-  <div class="page-title">Database Partner</div>
+  <div class="page-title" data-it="Database Partner" data-en="Partner Database">Database Partner</div>
   <div class="section-row"><span style="font-size:12px;color:var(--muted)">Condiviso con tutto il team</span><button class="btn btn-primary btn-sm" onclick="openModal('modal-partner')"><i class="ti ti-plus"></i> Aggiungi partner</button></div>
   <div class="partner-grid" id="partner-grid"></div>
 </div>
 
 <!-- CONTACTS -->
 <div class="page" id="page-contacts">
-  <div class="page-title">Database Contatti</div>
+  <div class="page-title" data-it="Database Contatti" data-en="Contact Database">Database Contatti</div>
   <div class="section-row">
     <input type="text" id="contact-search" placeholder="Cerca nome, partner, ruolo..." style="border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;font-size:12px;width:240px" oninput="renderContacts()">
     <button class="btn btn-primary btn-sm" onclick="openModal('modal-contact')"><i class="ti ti-plus"></i> Aggiungi contatto</button>
@@ -206,7 +206,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 <!-- WORK PACKAGES -->
 <div class="page" id="page-workpackages">
-  <div class="page-title">Work Packages</div>
+  <div class="page-title" data-it="Work Packages" data-en="Work Packages">Work Packages</div>
   <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-wp')"><i class="ti ti-plus"></i> Aggiungi WP</button></div>
   <div class="card"><div class="card-body" style="padding:0">
     <table class="data-table"><thead><tr><th>WP</th><th>Titolo</th><th>Tipo</th><th>Lead</th><th>Inizio</th><th>Fine</th><th>PM</th><th>Budget (€)</th><th>Azioni</th></tr></thead>
@@ -216,7 +216,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 <!-- TASKS & PM ALLOCATION -->
 <div class="page" id="page-tasks">
-  <div class="page-title">Tasks & Allocazione Person Months</div>
+  <div class="page-title" data-it="Tasks & Allocazione Person Months" data-en="Tasks & Person Months Allocation">Tasks & Allocazione Person Months</div>
   <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-task')"><i class="ti ti-plus"></i> Aggiungi task</button></div>
   <div id="tasks-by-wp"></div>
 </div>
@@ -236,7 +236,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 <!-- MILESTONES -->
 <div class="page" id="page-milestones">
-  <div class="page-title">Milestones & Deliverables</div>
+  <div class="page-title" data-it="Milestones & Deliverables" data-en="Milestones & Deliverables">Milestones & Deliverables</div>
   <div class="tabs"><div class="tab active" onclick="switchTab('ms')">Milestones</div><div class="tab" onclick="switchTab('del')">Deliverables</div></div>
   <div id="tab-ms">
     <div class="section-row"><div></div><button class="btn btn-primary btn-sm" onclick="openModal('modal-ms')"><i class="ti ti-plus"></i> Aggiungi milestone</button></div>
@@ -268,7 +268,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 <!-- COMPATIBILITY -->
 <div class="page" id="page-compatibility">
-  <div class="page-title">Compatibilità Partner — Attività</div>
+  <div class="page-title" data-it="Compatibilità Partner — Attività" data-en="Partner — Activity Compatibility">Compatibilità Partner — Attività</div>
   <div style="margin-bottom:10px;padding:10px 14px;background:#eef2ff;border-left:3px solid var(--eu);border-radius:0 4px 4px 0;font-size:11px">
     La matrice mostra quali partner partecipano a quali tasks. Verde = coinvolto con PM, Grigio = non coinvolto.
   </div>
@@ -278,7 +278,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 
 <!-- SHARE -->
 <div class="page" id="page-share">
-  <div class="page-title">Condividi Progetto</div>
+  <div class="page-title" data-it="Condividi Progetto" data-en="Share Project">Condividi Progetto</div>
   <div class="card"><div class="card-header"><span class="card-title">Link per partner esterni (read-only)</span></div>
   <div class="card-body">
     <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Condividi questo link per dare accesso in sola lettura al progetto corrente.</p>
@@ -883,7 +883,10 @@ function renderDashboard(){
   const pP=projectPartners.filter(x=>x.project_id===p.id);
   document.getElementById('dash-title').textContent='Dashboard — '+p.name;
   document.getElementById('stat-wp').textContent=pWPs.length;
-  document.getElementById('stat-budget').textContent='€'+Number(p.budget||0).toLocaleString('it');
+  const budgetVal = Number(p.budget||0);
+  const budgetDisplay = budgetVal >= 1000000 ? '€' + (budgetVal/1000000).toFixed(1).replace('.',',') + 'M' : '€' + Math.round(budgetVal).toLocaleString('it');
+  document.getElementById('stat-budget').textContent = budgetDisplay;
+  document.getElementById('stat-budget').title = '€' + Math.round(budgetVal).toLocaleString('it');
   document.getElementById('stat-pm').textContent=pWPs.reduce((a,w)=>a+(w.pm||0),0);
   document.getElementById('stat-partners').textContent=pP.length;
   document.getElementById('dash-wp-table').innerHTML=`<thead><tr><th>WP</th><th>Titolo</th><th>Lead</th><th>PM</th></tr></thead><tbody>${pWPs.map(w=>`<tr><td><span class="badge badge-wp">${w.num}</span></td><td>${w.title}</td><td><span class="tag">${w.lead||'—'}</span></td><td style="font-family:var(--mono)">${w.pm||0}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nessun WP</td></tr>'}</tbody>`;
@@ -1044,7 +1047,18 @@ let currentLang = 'it';
 function t(it, en){ return currentLang === 'it' ? it : en; }
 function toggleLang(){
   currentLang = currentLang === 'it' ? 'en' : 'it';
-  document.getElementById('lang-btn').textContent = currentLang === 'it' ? 'EN' : 'IT';
+  const btn = document.getElementById('lang-btn');
+  if(btn) btn.textContent = currentLang === 'it' ? 'EN' : 'IT';
+  // Update all static elements with data-it/data-en attributes
+  document.querySelectorAll('[data-it]').forEach(el => {
+    const val = el.getAttribute('data-' + currentLang);
+    if(val) el.textContent = val;
+  });
+  // Update placeholders
+  document.querySelectorAll('[data-placeholder-it]').forEach(el => {
+    const val = el.getAttribute('data-placeholder-' + currentLang);
+    if(val) el.placeholder = val;
+  });
   renderAll();
 }
 
