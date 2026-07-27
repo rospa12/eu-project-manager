@@ -477,6 +477,35 @@ let currentLang='it';
 const T_DICT={"Progetti": "Projects", "Partner DB": "Partner DB", "Contatti": "Contacts", "Dashboard": "Dashboard", "Work Packages": "Work Packages", "Tasks & PM": "Tasks & PM", "Matrice PM": "PM Matrix", "Budget": "Budget", "Milestones & Del.": "Milestones & Del.", "Gantt": "Gantt", "Compatibilità": "Compatibility", "Condividi": "Share", "Assistente AI": "AI Assistant", "Esporta": "Export", "Generale": "General", "Progetto corrente": "Current project", "Pianificazione": "Planning", "Strumenti": "Tools", "Progetto:": "Project:", "+ Nuovo": "+ New", "Nuovo progetto": "New project", "Nuovo": "New", "Aggiungi partner": "Add partner", "Aggiungi contatto": "Add contact", "Aggiungi WP": "Add WP", "Aggiungi task": "Add task", "Aggiungi milestone": "Add milestone", "Aggiungi deliverable": "Add deliverable", "Aggiungi task in": "Add task in", "Aggiungi prima i Work Packages.": "Add Work Packages first.", "Aggiungi partner e tasks per vedere la matrice.": "Add partners and tasks to see the matrix.", "Aggiungi partner e tasks (con allocazione PM) per vedere la matrice.": "Add partners and tasks (with PM allocation) to see the matrix.", "Aggiungi WP per vedere il budget": "Add WP to see the budget", "Aggiungi WP per visualizzare il Gantt.": "Add WP to display the Gantt.", "Titolo": "Title", "Titolo completo": "Full title", "Mese": "Month", "Mese inizio": "Start month", "Mese fine": "End month", "Mese consegna": "Delivery month", "Stato": "Status", "Durata (mesi)": "Duration (months)", "Ruolo": "Role", "Ruolo nel progetto": "Role in project", "Ruolo in questo task": "Role in this task", "Annulla": "Cancel", "Salva": "Save", "Salva task": "Save task", "Progetto": "Project", "Partner": "Partner", "Partner lead": "Lead partner", "Seleziona partner": "Select partner", "Università / Centro ricerca": "University / Research centre", "Comune / Autorità pubblica": "Municipality / Public authority", "Allocazione Person Months per partner": "Person Months allocation per partner", "Riepilogo allocazione PM per partner e task": "Summary of PM allocation per partner and task", "Compatibilità Partner — Attività": "Partner — Activity Compatibility", "Matrice Compatibilità Partner × Task": "Partner × Task Compatibility Matrix", "Database Partner": "Partner Database", "Condividi Progetto": "Share Project", "Link per partner esterni (read-only)": "Link for external partners (read-only)", "Condividi questo link per dare accesso in sola lettura al progetto corrente.": "Share this link to give read-only access to the current project.", "Link per partner specifico": "Link for a specific partner", "Genera testi pronti per la proposta HOLA — copia e incolla nel documento Word": "Generate ready-to-use texts for the proposal — copy and paste into the Word document", "Esporta — template CE & EUI": "Export — EC & EUI templates", "Budget per partner e categoria": "Budget per partner and category", "PM per partner × WP": "PM per partner × WP", "Partnership quality": "Partnership quality", "Quality of the Partnership and Consortium": "Quality of the Partnership and Consortium", "Nessun progetto.": "No projects.", "Nessun progetto selezionato.": "No project selected.", "Nessun partner.": "No partners.", "Nessun contatto.": "No contacts.", "Nessun WP.": "No WP.", "Nessun WP": "No WP", "Nessun task in questo WP.": "No tasks in this WP.", "Nessuna milestone.": "No milestones.", "Nessun deliverable.": "No deliverables.", "Nessun deliverable": "No deliverables", "Nessuna risposta.": "No response.", "Nessuno": "None", "Nessuna": "None", "Nessun WP inserito.": "No WP entered.", "Eliminare questo elemento?": "Delete this item?", "Clicca ✏️ per aggiungere l'allocazione PM per partner": "Click ✏️ to add PM allocation per partner", "Per aggiornare: Tasks & PM → modifica task → inserisci PM per ogni partner.": "To update: Tasks & PM → edit task → enter PM for each partner.", "Cerca nome, partner, ruolo...": "Search name, partner, role...", "ruolo...": "role...", "Totale PM task": "Task PM total", "Totale PM": "Total PM"};
 function tr(s){if(currentLang==='it')return s;return (T_DICT[s]!==undefined)?T_DICT[s]:s;}
 
+function _i18nWalk(node){
+  var base=(node.__orig!==undefined)?node.__orig:node.nodeValue;
+  if(!base) return;
+  var key=base.trim(); if(!key) return;
+  if(currentLang==='en' && T_DICT[key]!==undefined){
+    if(node.__orig===undefined) node.__orig=node.nodeValue;
+    node.nodeValue=base.replace(key,T_DICT[key]);
+  } else if(currentLang==='it' && node.__orig!==undefined){
+    node.nodeValue=node.__orig;
+  }
+}
+function applyTranslations(){
+  var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false);
+  var nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(_i18nWalk);
+  // placeholder
+  document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(function(el){
+    var base=(el.__origPh!==undefined)?el.__origPh:el.placeholder;
+    if(!base) return; var key=base.trim();
+    if(currentLang==='en' && T_DICT[key]!==undefined){
+      if(el.__origPh===undefined) el.__origPh=el.placeholder;
+      el.placeholder=T_DICT[key];
+    } else if(currentLang==='it' && el.__origPh!==undefined){
+      el.placeholder=el.__origPh;
+    }
+  });
+}
+
+
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function cp(){return projects.find(p=>p.id===currentProjectId)||null;}
@@ -546,6 +575,7 @@ function renderAll(){
   renderGantt();
   renderCompatibility();   // <-- WAS MISSING
   updateShareLinks();      // <-- WAS MISSING
+  applyTranslations();
 }
 
 // =============================================
