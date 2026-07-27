@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keep Cool — Seed HOLA</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f5f7fc;color:#1a2340;padding:28px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{color:#003399;font-size:22px;margin-bottom:4px}
+.sub{color:#5a6a8a;margin-bottom:20px;font-size:13px}
+.card{background:#fff;border:1px solid #C5CEDF;border-radius:6px;padding:18px;margin-bottom:16px}
+.warn{background:#fffae8;border-left:3px solid #FFCC00;padding:12px 14px;border-radius:0 4px 4px 0;font-size:13px;margin-bottom:16px}
+button{background:#003399;color:#fff;border:none;border-radius:5px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{background:#001f6e}
+button:disabled{background:#9aabc4;cursor:not-allowed}
+#log{background:#0d1220;color:#c8d4e8;border-radius:6px;padding:14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.7;max-height:340px;overflow-y:auto;margin-top:16px;white-space:pre-wrap;display:none}
+.ok{color:#4ade80}.err{color:#f87171}.dim{color:#8fa3c4}
+</style>
+</head>
+<body>
+<h1>Keep Cool — Inserimento automatico in HOLA</h1>
+<div class="sub">LIFE-2026-CET-HEATCOOLPLAN · inserisce progetto, 9 partner, 7 WP e 22 task nel database di HOLA</div>
+
+<div class="warn">
+<strong>Prima di procedere:</strong> questo script scrive nel database reale di HOLA. Inserisce solo dati NUOVI per il progetto Keep Cool: non tocca il progetto HOLA/Isernia né altri dati esistenti. I partner nuovi vengono aggiunti al DB partner condiviso. Se lanci lo script due volte, crea doppioni — lancialo una sola volta.
+</div>
+
+<div class="card">
+<p style="margin-bottom:14px">Clicca il pulsante per inserire tutto. L'operazione richiede pochi secondi. Al termine, ricarica HOLA e seleziona il progetto <strong>Keep Cool</strong> dal menu in alto.</p>
+<button id="run" onclick="seed()">Inserisci Keep Cool in HOLA</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+const SUPABASE_URL='https://yvrwgdthmecocgvfmwsq.supabase.co';
+const SUPABASE_KEY='sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+const logEl=document.getElementById('log');
+function log(msg,cls=''){logEl.style.display='block';const span=document.createElement('div');if(cls)span.className=cls;span.textContent=msg;logEl.appendChild(span);logEl.scrollTop=logEl.scrollHeight;}
+
+// ── PARTNER (9) ──────────────────────────────────────────────
+const PARTNERS=[
+  {acronym:'REA',    name:'REA Croatia / MARA',            country:'HR', type:'ONG / Associazione',        role:'Coordinatore', notes:'Coordination'},
+  {acronym:'GeneGIS',name:'GeneGIS',                       country:'IT', type:'PMI',                       role:'Partner',      notes:'Data (GIS / geothermal). Usa e adatta dataset esistenti — nessun nuovo software (scope CSA).'},
+  {acronym:'LDK',    name:'LDK Consultants',               country:'GR', type:'PMI',                       role:'Partner',      notes:'Methodology provider'},
+  {acronym:'UIV',    name:'UIV Urban Innovation Vienna',   country:'AT', type:'Altro',                     role:'Partner',      notes:'Methodology (best practice / GIS)'},
+  {acronym:'Molise', name:'Regione Molise',                country:'IT', type:'Comune / Autorità pubblica',role:'Partner',      notes:'Implementation / territorial host. ERDF Managing Authority.'},
+  {acronym:'ALEC',   name:'ALEC Bordeaux',                 country:'FR', type:'ONG / Associazione',        role:'Partner',      notes:'Implementation / territorial host'},
+  {acronym:'KSSENA', name:'KSSENA',                        country:'SI', type:'ONG / Associazione',        role:'Partner',      notes:'Implementation / territorial host'},
+  {acronym:'ADB',    name:'ADB (da confermare)',           country:'ES', type:'ONG / Associazione',        role:'Partner',      notes:'Implementation / territorial host — TBC'},
+  {acronym:'Matrix', name:'Matrix Internet',               country:'IE', type:'PMI',                       role:'Partner',      notes:'Replication / dissemination'},
+];
+
+// ── WORK PACKAGES (7) — WP1 = management ─────────────────────
+const WPS=[
+  {num:'WP1', title:'Management & Coordination',                         type:'MGT',   lead:'REA',     start_month:1,  end_month:36, objectives:'Coordinamento amministrativo, finanziario e di qualità; reporting CINEA. Budget max 10-12% del totale. WP1 = management come da template LIFE.'},
+  {num:'WP2', title:'Territorial Diagnostics & Geospatial Data',         type:'RTD',   lead:'GeneGIS', start_month:1,  end_month:12, objectives:'Dataset geospaziali e mappe potenziale geotermico superficiale (base diagnostica). Alimenta WP3 e WP5. GeneGIS usa/adatta strumenti esistenti.'},
+  {num:'WP3', title:'Technical Methodology & Building Readiness',        type:'RTD',   lead:'LDK',     start_month:1,  end_month:10, objectives:'Criteri tecnici per zone idonee e assessment readiness edifici. Template LHCP armonizzato. Alimenta WP5.'},
+  {num:'WP4', title:'Stakeholder Engagement & Political Buy-in',         type:'OTHER', lead:'ALEC',    start_month:3,  end_month:30, objectives:'Processi partecipativi, co-creazione, delibere di impegno dei Sindaci. Engagement fornitori, DSO e gestori di rete. Precondizione WP6.'},
+  {num:'WP5', title:'LHCP Elaboration & Financing Options',             type:'RTD',   lead:'LDK',     start_month:8,  end_month:28, objectives:'Elaborazione LHCP e identificazione opzioni di finanziamento per ciascuna misura (fondi pubblici/privati, Social Climate Fund). Output primario.'},
+  {num:'WP6', title:'Formal Adoption & Permanent Governance',           type:'OTHER', lead:'Molise',  start_month:18, end_month:36, objectives:'Dimensione SOSTENIBILITA (call). Adozione formale 30-40 LHCP; hub/task force permanenti (3-5) per governance duratura e istituzionalizzata sotto responsabilità di comuni e regioni.'},
+  {num:'WP7', title:'Knowledge Transfer & Replication',                 type:'COMM',  lead:'Matrix',  start_month:6,  end_month:36, objectives:'Dimensione REPLICAZIONE (call). Trasferimento conoscenza per avviare processi LHCP oltre i territori target; toolkit; 10-20 comuni follower; dissemination.'},
+];
+
+// ── TASKS (22) — owner mappato su lead-partner ──────────────
+const TASKS=[
+  // WP1
+  {task_id:'T1.1', wp_num:'WP1', title:'Project & financial management, CINEA reporting', owner:'REA',    start_month:1,  end_month:36},
+  {task_id:'T1.2', wp_num:'WP1', title:'Quality assurance & risk management',             owner:'REA',    start_month:1,  end_month:36},
+  {task_id:'T1.3', wp_num:'WP1', title:'Consortium governance & coordination',            owner:'REA',    start_month:1,  end_month:36},
+  // WP2
+  {task_id:'T2.1', wp_num:'WP2', title:'Geospatial datasets comuni target',               owner:'GeneGIS',start_month:1,  end_month:8},
+  {task_id:'T2.2', wp_num:'WP2', title:'Mappe potenziale geotermico superficiale',        owner:'GeneGIS',start_month:3,  end_month:12},
+  {task_id:'T2.3', wp_num:'WP2', title:'Baseline territoriale per Paese',                 owner:'Molise', start_month:1,  end_month:10},
+  {task_id:'T2.4', wp_num:'WP2', title:'Supply-side: outlook domanda/offerta + mappatura RES', owner:'UIV', start_month:2, end_month:12},
+  // WP3
+  {task_id:'T3.1', wp_num:'WP3', title:'Criteri tecnici zone idonee',                     owner:'LDK',    start_month:1,  end_month:8},
+  {task_id:'T3.2', wp_num:'WP3', title:'Building readiness assessment',                   owner:'LDK',    start_month:3,  end_month:9},
+  {task_id:'T3.3', wp_num:'WP3', title:'Template LHCP armonizzato',                       owner:'LDK',    start_month:5,  end_month:10},
+  // WP4
+  {task_id:'T4.1', wp_num:'WP4', title:'Workshop co-creazione multi-stakeholder',        owner:'ALEC',   start_month:3,  end_month:24},
+  {task_id:'T4.2', wp_num:'WP4', title:'Delibere / impegni dei Sindaci',                  owner:'Molise', start_month:6,  end_month:28},
+  {task_id:'T4.3', wp_num:'WP4', title:'Engagement fornitori, DSO & gestori rete',        owner:'KSSENA', start_month:4,  end_month:30},
+  // WP5
+  {task_id:'T5.1', wp_num:'WP5', title:'Bozze LHCP per comune',                           owner:'LDK',    start_month:8,  end_month:24},
+  {task_id:'T5.2', wp_num:'WP5', title:'Identificazione opzioni di finanziamento per misura LHCP', owner:'REA', start_month:10, end_month:28},
+  {task_id:'T5.3', wp_num:'WP5', title:'Integrazione geotermia superficiale nei piani',   owner:'GeneGIS',start_month:8,  end_month:26},
+  // WP6
+  {task_id:'T6.1', wp_num:'WP6', title:'Adozione formale LHCP (target 30-40)',            owner:'Molise', start_month:20, end_month:36},
+  {task_id:'T6.2', wp_num:'WP6', title:'Hub / task force di coordinamento permanenti (3-5)', owner:'KSSENA', start_month:18, end_month:36},
+  {task_id:'T6.3', wp_num:'WP6', title:'Governance model post-progetto',                  owner:'ADB',    start_month:22, end_month:36},
+  // WP7
+  {task_id:'T7.1', wp_num:'WP7', title:'Toolkit di replicazione',                         owner:'Matrix', start_month:12, end_month:34},
+  {task_id:'T7.2', wp_num:'WP7', title:'Avvio processi LHCP in comuni follower (10-20)',  owner:'ALEC',   start_month:18, end_month:36},
+  {task_id:'T7.3', wp_num:'WP7', title:'Dissemination & communication plan',             owner:'Matrix', start_month:6,  end_month:36},
+];
+
+async function seed(){
+  const btn=document.getElementById('run');
+  btn.disabled=true;btn.textContent='Inserimento in corso…';
+  logEl.innerHTML='';
+  try{
+    // 1) PROGETTO
+    const projectId=uid();
+    const project={id:projectId,name:'Keep Cool',title:'Local Heating and Cooling Plans based on shallow geothermal energy',call:'LIFE',topic:'LIFE-2026-CET-HEATCOOLPLAN',months:36,budget:2000000,coordinator:'REA Croatia / MARA',status:'In preparazione'};
+    let r=await sb.from('projects').insert(project);
+    if(r.error)throw new Error('projects: '+r.error.message);
+    log('✓ Progetto Keep Cool creato','ok');
+
+    // 2) PARTNER + link project_partners
+    const acronymToId={};
+    for(const p of PARTNERS){
+      const id=uid();acronymToId[p.acronym]=id;
+      let rp=await sb.from('partners').insert({id,...p});
+      if(rp.error)throw new Error('partners('+p.acronym+'): '+rp.error.message);
+      let rpp=await sb.from('project_partners').insert({project_id:projectId,partner_id:id});
+      if(rpp.error)throw new Error('project_partners('+p.acronym+'): '+rpp.error.message);
+      log('  ✓ Partner '+p.acronym,'dim');
+    }
+    log('✓ 9 partner inseriti e collegati al progetto','ok');
+
+    // 3) WORK PACKAGES
+    for(const w of WPS){
+      let rw=await sb.from('work_packages').insert({id:uid(),project_id:projectId,...w,pm:0,budget:0});
+      if(rw.error)throw new Error('work_packages('+w.num+'): '+rw.error.message);
+      log('  ✓ '+w.num+' — '+w.title,'dim');
+    }
+    log('✓ 7 Work Package inseriti (WP1 = management)','ok');
+
+    // 4) TASKS + allocazione PM al partner owner (10 PM di default, modificabile in HOLA)
+    for(const t of TASKS){
+      const taskId=uid();
+      let rt=await sb.from('tasks').insert({id:taskId,project_id:projectId,task_id:t.task_id,wp_num:t.wp_num,title:t.title,status:'nuovo',start_month:t.start_month,end_month:t.end_month,deliverable:'',pm:0});
+      if(rt.error)throw new Error('tasks('+t.task_id+'): '+rt.error.message);
+      // allocazione owner nella tabella task_partners (PM=0, ruolo Lead — la aggiusti in HOLA)
+      const ownerId=acronymToId[t.owner];
+      if(ownerId){
+        let rtp=await sb.from('task_partners').insert({id:uid(),task_id:taskId,partner_id:ownerId,pm:0,role_in_task:'Lead'});
+        if(rtp.error)log('    ! task_partners('+t.task_id+'): '+rtp.error.message,'err');
+      }
+      log('  ✓ '+t.task_id+' — '+t.title+' ['+t.owner+']','dim');
+    }
+    log('✓ 22 task inseriti con owner assegnato','ok');
+
+    log('','');
+    log('════════════════════════════════════','ok');
+    log('COMPLETATO. Ricarica HOLA e seleziona','ok');
+    log('il progetto "Keep Cool" dal menu in alto.','ok');
+    log('════════════════════════════════════','ok');
+    btn.textContent='✓ Fatto — ricarica HOLA';
+  }catch(e){
+    log('','');
+    log('✗ ERRORE: '+e.message,'err');
+    log('Nessun dato parziale è stato pulito. Controlla in HOLA cosa è stato inserito prima di rilanciare.','err');
+    btn.disabled=false;btn.textContent='Riprova';
+  }
+}
+</script>
+</body>
+</html>
