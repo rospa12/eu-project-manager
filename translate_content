@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keep Cool — Translate content to EN</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f5f7fc;color:#1a2340;padding:28px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{color:#003399;font-size:21px;margin-bottom:4px}
+.sub{color:#5a6a8a;margin-bottom:20px;font-size:13px}
+.card{background:#fff;border:1px solid #C5CEDF;border-radius:6px;padding:18px;margin-bottom:16px}
+.warn{background:#fffae8;border-left:3px solid #FFCC00;padding:12px 14px;border-radius:0 4px 4px 0;font-size:13px;margin-bottom:16px}
+button{background:#003399;color:#fff;border:none;border-radius:5px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{background:#001f6e}button:disabled{background:#9aabc4;cursor:not-allowed}
+#log{background:#0d1220;color:#c8d4e8;border-radius:6px;padding:14px;font-family:monospace;font-size:12px;line-height:1.7;max-height:420px;overflow-y:auto;margin-top:16px;white-space:pre-wrap;display:none}
+.ok{color:#4ade80}.err{color:#f87171}.dim{color:#8fa3c4}
+</style></head>
+<body>
+<h1>Keep Cool — Translate content to English</h1>
+<div class="sub">Translates the 24 task titles and the 8 WP objectives from Italian to English (proposal content in the database)</div>
+<div class="warn">
+Updates the <strong>title</strong> of the 24 tasks and the <strong>objectives</strong> of the 8 WP, from Italian to English. Does not touch PM, budget, deliverables, milestones, partners. Re-runnable.
+</div>
+<div class="card"><button id="run" onclick="run()">Translate content to English</button></div>
+<div id="log"></div>
+<script>
+const SUPABASE_URL='https://yvrwgdthmecocgvfmwsq.supabase.co';
+const SUPABASE_KEY='sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const logEl=document.getElementById('log');
+function log(m,c=''){logEl.style.display='block';const d=document.createElement('div');if(c)d.className=c;d.textContent=m;logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;}
+const TASKS=[
+  {task:'T1.1',title:'Project & financial management, CINEA reporting'},
+  {task:'T1.2',title:'Quality assurance & risk management'},
+  {task:'T1.3',title:'Consortium governance & coordination'},
+  {task:'T2.1',title:'Geospatial datasets for target municipalities'},
+  {task:'T2.2',title:'Shallow geothermal potential maps'},
+  {task:'T2.3',title:'Per-country territorial baseline'},
+  {task:'T3.1',title:'Potential mapping methodology (supply-demand)'},
+  {task:'T3.2',title:'Supply-side/RES integration into the planning layer'},
+  {task:'T3.3',title:'Transfer of Austrian best practice (Vienna)'},
+  {task:'T4.1',title:'Technical criteria for suitable zones'},
+  {task:'T4.2',title:'Building readiness assessment'},
+  {task:'T4.3',title:'Harmonised LHCP template'},
+  {task:'T5.1',title:'Multi-stakeholder co-creation workshops'},
+  {task:'T5.2',title:'Mayoral deliberations / commitments'},
+  {task:'T5.3',title:'Engagement of suppliers, DSOs & grid operators'},
+  {task:'T6.1',title:'LHCP drafts per municipality'},
+  {task:'T6.2',title:'Financing options identification per LHCP measure'},
+  {task:'T6.3',title:'Integration of shallow geothermal into the plans'},
+  {task:'T7.1',title:'Formal LHCP adoption (target 30-40)'},
+  {task:'T7.2',title:'Permanent coordination hubs / task forces (3-5)'},
+  {task:'T7.3',title:'Post-project governance model'},
+  {task:'T8.1',title:'Replication toolkit'},
+  {task:'T8.2',title:'LHCP processes launched in follower municipalities (10-20)'},
+  {task:'T8.3',title:'Dissemination & communication plan'}
+];
+const WPOBJ=[
+  {num:'WP1',obj:'Ensure effective administrative, financial and quality coordination across 8 partners and 7 countries over 36 months, including CINEA reporting and KPI web-tool submissions. Management effort is distributed across all partners, ensuring consortium cohesion and covering the 5% co-financing requirement. Kept within the 12% budget ceiling.'},
+  {num:'WP2',obj:'Produce the diagnostic data layer for all target municipalities: geospatial data inventory (INSPIRE, national geological surveys, EPC registries, Copernicus), H&C demand mapping, energy-poverty hotspot identification, and integration of existing geological/geothermal datasets (ISPRA, HGI, GeoZS, BRGM) into shallow-geothermal suitability maps. GeneGIS uses and adapts existing tools and datasets — no new software, no field geological survey (scope-compliant). Feeds WP3, WP4 and WP6.'},
+  {num:'WP3',obj:"Transform WP2 data into a spatially-differentiated decision layer usable by municipalities: supply-demand outlook, integration of supply-side and renewable sources into planning, and transfer of the Wiener Warmeplan 2040 and '100 Projekte Raus aus Gas' best practice adapted to small and medium-sized municipalities. Existing GIS tools only. Feeds WP4 and WP6."},
+  {num:'WP4',obj:'Define the technical criteria that turn data and method into buildable plans: building readiness for low-temperature H&C, supply/return temperature and emitter compatibility, suitability criteria for Micro-DHC zones, and a harmonised EED Art. 25(6)-compliant LHCP template. LDK connects supply-side planning (WP3) with real building-side operating conditions. Feeds WP6.'},
+  {num:'WP5',obj:'Secure the active involvement and firm political commitment of target authorities: stakeholder mapping (DSOs, utilities, ESCOs, energy communities, housing associations), three co-creation workshop series per municipality, tailored Letters of Support with mayoral signature and intent to adopt, and explicit engagement of DSOs and grid operators. Precondition for the formal adoption pursued in WP7.'},
+  {num:'WP6',obj:"Produce the project's primary output: 30-40 LHCP drafts integrating WP2-WP4 outputs, each with a mandatory financing-identification module (ERDF, Social Climate Fund, InvestEU, ELENA, national funds), with special attention to the PR FESR Molise investment pathway. No LHCP is submitted for adoption without a confirmed financing pathway."},
+  {num:'WP7',obj:'Deliver the sustainability dimension of the call: formal adoption of 30-40 LHCPs by municipal councils, establishment of 3-5 permanent LHCP Coordination Hubs hosted by regional energy agencies or authorities, and triggered-investment reporting. Institutionalises the planning process beyond the grant under the responsibility of municipalities and regions.'},
+  {num:'WP8',obj:'Maximise catalytic and replication potential: open-access replication toolkit in 7 EU languages, follower-municipality network (10-20 initiated during the action, 30-50 within five years), capacity building for 150-200 municipal officials, dissemination through the ALI Comuni channel to the Italian municipal network, project website, final conference and After-LIFE plan. Builds on and complements ESCALATE and Plan4Cold.'}
+];
+async function run(){
+  const btn=document.getElementById('run');btn.disabled=true;btn.textContent='Working...';logEl.innerHTML='';
+  try{
+    let {data:proj}=await sb.from('projects').select('id').eq('name','Keep Cool');
+    if(!proj||!proj.length)throw new Error('Keep Cool not found.');
+    const pid=proj[0].id;
+    log('\u2713 Keep Cool found','ok');log('','');
+    log('Task titles:','dim');
+    let nt=0;
+    for(const row of TASKS){
+      let r=await sb.from('tasks').update({title:row.title}).eq('project_id',pid).eq('task_id',row.task);
+      if(r.error)log('  ! '+row.task+': '+r.error.message,'err');
+      else{log('  \u2713 '+row.task,'dim');nt++;}
+    }
+    log('\u2713 '+nt+' task titles translated','ok');log('','');
+    log('WP objectives:','dim');
+    let nw=0;
+    for(const row of WPOBJ){
+      let r=await sb.from('work_packages').update({objectives:row.obj}).eq('project_id',pid).eq('num',row.num);
+      if(r.error)log('  ! '+row.num+': '+r.error.message,'err');
+      else{log('  \u2713 '+row.num,'dim');nw++;}
+    }
+    log('\u2713 '+nw+' WP objectives translated','ok');log('','');
+    log('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','ok');
+    log('DONE. Reload HOLA to see everything in English.','ok');
+    log('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','ok');
+    btn.textContent='\u2713 Done \u2014 reload HOLA';
+  }catch(e){log('\u2717 ERROR: '+(e.message||e),'err');btn.disabled=false;btn.textContent='Retry';}
+}
+</script></body></html>
