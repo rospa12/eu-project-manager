@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keep Cool — Load contacts</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f5f7fc;color:#1a2340;padding:28px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{color:#003399;font-size:21px;margin-bottom:4px}
+.sub{color:#5a6a8a;margin-bottom:20px;font-size:13px}
+.card{background:#fff;border:1px solid #C5CEDF;border-radius:6px;padding:18px;margin-bottom:16px}
+.warn{background:#fffae8;border-left:3px solid #FFCC00;padding:12px 14px;border-radius:0 4px 4px 0;font-size:13px;margin-bottom:16px}
+button{background:#003399;color:#fff;border:none;border-radius:5px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{background:#001f6e}button:disabled{background:#9aabc4;cursor:not-allowed}
+#log{background:#0d1220;color:#c8d4e8;border-radius:6px;padding:14px;font-family:monospace;font-size:12px;line-height:1.7;max-height:420px;overflow-y:auto;margin-top:16px;white-space:pre-wrap;display:none}
+.ok{color:#4ade80}.err{color:#f87171}.dim{color:#8fa3c4}
+</style></head>
+<body>
+<h1>Keep Cool — Load consortium contacts</h1>
+<div class="sub">Loads 14 real contacts, each linked to its partner organisation</div>
+<div class="warn">
+Adds 14 contacts to the shared Contacts database, linking each to its partner (REA, GeneGIS, LDK, UIV, ALEC, KSSENA). Panos and Cristina are added without a partner link. Skips any contact whose email already exists (no duplicates). Re-runnable.
+</div>
+<div class="card"><button id="run" onclick="run()">Load contacts</button></div>
+<div id="log"></div>
+<script>
+const SUPABASE_URL='https://yvrwgdthmecocgvfmwsq.supabase.co';
+const SUPABASE_KEY='sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+const logEl=document.getElementById('log');
+function log(m,c=''){logEl.style.display='block';const d=document.createElement('div');if(c)d.className=c;d.textContent=m;logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;}
+const CONTACTS=[
+  {fn:'Valérie',ln:'Degrange',acr:'ALEC',role:'Territorial host — Gironde',email:'valerie.degrange@alec-mb33.fr'},
+  {fn:'Ivan',ln:'Šimić',acr:'REA',role:'Technical expert',email:'ivan.simic@rea-sjever.hr'},
+  {fn:'Jelena',ln:'Kučan',acr:'REA',role:'Coordinator',email:'jelena@mara.hr'},
+  {fn:'Waltraud',ln:'Schmid',acr:'UIV',role:'Best practice / methodology',email:'schmid@urbaninnovation.at'},
+  {fn:'Nejc',ln:'Jurko',acr:'KSSENA',role:'Territorial host',email:'nejc.jurko@kssena.velenje.eu'},
+  {fn:'Theofanis',ln:'Benakopoulos',acr:'LDK',role:'Methodology lead (concept note)',email:'tbe@ldk.gr'},
+  {fn:'Anastasia',ln:'Spanou',acr:'LDK',role:'Senior Energy Consultant',email:'asp@ldk.gr'},
+  {fn:'Panos',ln:'Fetsis',acr:'',role:'LDK team',email:'panos.v.fetsis@gmail.com'},
+  {fn:'Dimitrios',ln:'Zenginis',acr:'LDK',role:'Expert',email:'zdi@ldk.gr'},
+  {fn:'Hana',ln:'Kolenc',acr:'KSSENA',role:'Territorial host',email:'hana.kolenc@kssena.velenje.eu'},
+  {fn:'Luca',ln:'Raso',acr:'GeneGIS',role:'Technical partner — geospatial data',email:'l.raso@genegis.net'},
+  {fn:'Stefano',ln:'Crepaldi',acr:'GeneGIS',role:'Geospatial / geothermal',email:'s.crepaldi@genegis.net'},
+  {fn:'Zvonimir',ln:'Perko',acr:'REA',role:'REA team',email:'zvonimir.perko@rea-sjever.hr'},
+  {fn:'Cristina',ln:'Zygomalas',acr:'',role:'Communication / EU projects',email:'cz@comunicazione.de'}
+];
+async function run(){
+  const btn=document.getElementById('run');btn.disabled=true;btn.textContent='Working...';logEl.innerHTML='';
+  try{
+    // carica tutti i partner per risolvere acronimo → id
+    let {data:partners}=await sb.from('partners').select('id,acronym,name');
+    partners=partners||[];
+    log('\u2713 '+partners.length+' partners loaded for matching','ok');
+    // carica contatti esistenti per anti-duplicato
+    let {data:existing}=await sb.from('contacts').select('email');
+    const existingEmails=new Set((existing||[]).map(x=>(x.email||'').toLowerCase()));
+    log('','');
+    let added=0, skipped=0;
+    for(const c of CONTACTS){
+      if(c.email && existingEmails.has(c.email.toLowerCase())){
+        log('  \u21b7 skip (exists): '+c.fn+' '+c.ln,'dim'); skipped++; continue;
+      }
+      // trova partner_id per acronimo
+      let pid=null;
+      if(c.acr){
+        const p=partners.find(x=>(x.acronym||'').toLowerCase()===c.acr.toLowerCase());
+        if(p) pid=p.id;
+        else log('  ! partner not found: '+c.acr+' (contact added without link)','err');
+      }
+      const row={id:uid(),firstname:c.fn,lastname:c.ln,partner_id:pid,role:c.role,email:c.email,phone:'',orcid:'',notes:''};
+      let r=await sb.from('contacts').insert(row);
+      if(r.error)log('  ! '+c.fn+' '+c.ln+': '+r.error.message,'err');
+      else{log('  \u2713 '+c.fn+' '+c.ln+(c.acr?' \u2192 '+c.acr:' (no partner)'),'dim');added++;}
+    }
+    log('','');
+    log('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','ok');
+    log('\u2713 '+added+' contacts added, '+skipped+' skipped (already existed)','ok');
+    log('Reload HOLA \u2192 Contacts to see them.','ok');
+    log('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','ok');
+    btn.textContent='\u2713 Done \u2014 reload HOLA';
+  }catch(e){log('\u2717 ERROR: '+(e.message||e),'err');btn.disabled=false;btn.textContent='Retry';}
+}
+</script></body></html>
