@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keep Cool — Translate task titles to EN</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f5f7fc;color:#1a2340;padding:28px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{color:#003399;font-size:21px;margin-bottom:4px}
+.sub{color:#5a6a8a;margin-bottom:20px;font-size:13px}
+.card{background:#fff;border:1px solid #C5CEDF;border-radius:6px;padding:18px;margin-bottom:16px}
+.warn{background:#fffae8;border-left:3px solid #FFCC00;padding:12px 14px;border-radius:0 4px 4px 0;font-size:13px;margin-bottom:16px}
+button{background:#003399;color:#fff;border:none;border-radius:5px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{background:#001f6e}button:disabled{background:#9aabc4;cursor:not-allowed}
+#log{background:#0d1220;color:#c8d4e8;border-radius:6px;padding:14px;font-family:monospace;font-size:12px;line-height:1.7;max-height:420px;overflow-y:auto;margin-top:16px;white-space:pre-wrap;display:none}
+.ok{color:#4ade80}.err{color:#f87171}.dim{color:#8fa3c4}
+</style></head>
+<body>
+<h1>Keep Cool — Translate task titles to English</h1>
+<div class="sub">Updates the 24 task titles from Italian to English (proposal content)</div>
+<div class="warn">
+Updates only the <strong>title</strong> field of the 24 tasks in Keep Cool, from Italian to English. Does not touch PM, WP, deliverables, milestones, budget. Re-runnable.
+</div>
+<div class="card"><button id="run" onclick="run()">Translate task titles to English</button></div>
+<div id="log"></div>
+<script>
+const SUPABASE_URL='https://yvrwgdthmecocgvfmwsq.supabase.co';
+const SUPABASE_KEY='sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const logEl=document.getElementById('log');
+function log(m,c=''){logEl.style.display='block';const d=document.createElement('div');if(c)d.className=c;d.textContent=m;logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;}
+const MAP=[
+  {task:'T1.1',title:'Project & financial management, CINEA reporting'},
+  {task:'T1.2',title:'Quality assurance & risk management'},
+  {task:'T1.3',title:'Consortium governance & coordination'},
+  {task:'T2.1',title:'Geospatial datasets for target municipalities'},
+  {task:'T2.2',title:'Shallow geothermal potential maps'},
+  {task:'T2.3',title:'Per-country territorial baseline'},
+  {task:'T3.1',title:'Potential mapping methodology (supply-demand)'},
+  {task:'T3.2',title:'Supply-side/RES integration into the planning layer'},
+  {task:'T3.3',title:'Transfer of Austrian best practice (Vienna)'},
+  {task:'T4.1',title:'Technical criteria for suitable zones'},
+  {task:'T4.2',title:'Building readiness assessment'},
+  {task:'T4.3',title:'Harmonised LHCP template'},
+  {task:'T5.1',title:'Multi-stakeholder co-creation workshops'},
+  {task:'T5.2',title:'Mayoral deliberations / commitments'},
+  {task:'T5.3',title:'Engagement of suppliers, DSOs & grid operators'},
+  {task:'T6.1',title:'LHCP drafts per municipality'},
+  {task:'T6.2',title:'Financing options identification per LHCP measure'},
+  {task:'T6.3',title:'Integration of shallow geothermal into the plans'},
+  {task:'T7.1',title:'Formal LHCP adoption (target 30-40)'},
+  {task:'T7.2',title:'Permanent coordination hubs / task forces (3-5)'},
+  {task:'T7.3',title:'Post-project governance model'},
+  {task:'T8.1',title:'Replication toolkit'},
+  {task:'T8.2',title:'LHCP processes launched in follower municipalities (10-20)'},
+  {task:'T8.3',title:'Dissemination & communication plan'}
+];
+async function run(){
+  const btn=document.getElementById('run');btn.disabled=true;btn.textContent='Working...';logEl.innerHTML='';
+  try{
+    let {data:proj}=await sb.from('projects').select('id').eq('name','Keep Cool');
+    if(!proj||!proj.length)throw new Error('Keep Cool not found.');
+    const pid=proj[0].id;
+    log('✓ Keep Cool found','ok');log('','');
+    let n=0;
+    for(const row of MAP){
+      let r=await sb.from('tasks').update({title:row.title}).eq('project_id',pid).eq('task_id',row.task);
+      if(r.error)log('  ! '+row.task+': '+r.error.message,'err');
+      else{log('  ✓ '+row.task+' → '+row.title,'dim');n++;}
+    }
+    log('','');
+    log('════════════════','ok');
+    log('✓ '+n+' task titles translated to English','ok');
+    log('Reload HOLA → Tasks & PM to verify.','ok');
+    log('════════════════','ok');
+    btn.textContent='✓ Done — reload HOLA';
+  }catch(e){log('✗ ERROR: '+(e.message||e),'err');btn.disabled=false;btn.textContent='Retry';}
+}
+</script></body></html>
