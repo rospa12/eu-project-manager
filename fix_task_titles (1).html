@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keep Cool — Fix task titles EN (robust)</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f5f7fc;color:#1a2340;padding:28px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{color:#003399;font-size:21px;margin-bottom:4px}.sub{color:#5a6a8a;margin-bottom:20px;font-size:13px}
+.card{background:#fff;border:1px solid #C5CEDF;border-radius:6px;padding:18px;margin-bottom:16px}
+.warn{background:#fffae8;border-left:3px solid #FFCC00;padding:12px 14px;border-radius:0 4px 4px 0;font-size:13px;margin-bottom:16px}
+button{background:#003399;color:#fff;border:none;border-radius:5px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer}
+button:hover{background:#001f6e}button:disabled{background:#9aabc4;cursor:not-allowed}
+#log{background:#0d1220;color:#c8d4e8;border-radius:6px;padding:14px;font-family:monospace;font-size:12px;line-height:1.7;max-height:440px;overflow-y:auto;margin-top:16px;white-space:pre-wrap;display:none}
+.ok{color:#4ade80}.err{color:#f87171}.dim{color:#8fa3c4}.hl{color:#fbbf24}
+</style></head><body>
+<h1>Keep Cool — Fix all task titles to English</h1>
+<div class="sub">Robust: reads existing tasks, matches by ID or by Italian title, translates everything left in Italian. Also sets status 'nuovo' → 'new'.</div>
+<div class="warn">Reads all Keep Cool tasks from the database and updates every title still in Italian to English (matching by task ID, or by Italian title as fallback). Also normalises status 'nuovo'→'new'. Only touches the title and status fields. Re-runnable.</div>
+<div class="card"><button id="run" onclick="run()">Fix all task titles + status</button></div>
+<div id="log"></div>
+<script>
+const SUPABASE_URL='https://yvrwgdthmecocgvfmwsq.supabase.co';
+const SUPABASE_KEY='sb_publishable_Xb-qdF1EnndS3cogCmz8ww_U5CSGkEv';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const logEl=document.getElementById('log');
+function log(m,c=''){logEl.style.display='block';const d=document.createElement('div');if(c)d.className=c;d.textContent=m;logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;}
+const BYID=[
+  {tid:'T1.1',en:'Project & financial management, CINEA reporting'},
+  {tid:'T1.2',en:'Quality assurance & risk management'},
+  {tid:'T1.3',en:'Consortium governance & coordination'},
+  {tid:'T2.1',en:'Geospatial datasets for target municipalities'},
+  {tid:'T2.2',en:'Shallow geothermal potential maps'},
+  {tid:'T2.3',en:'Per-country territorial baseline'},
+  {tid:'T3.1',en:'Potential mapping methodology (supply-demand)'},
+  {tid:'T3.2',en:'Supply-side/RES integration into the planning layer'},
+  {tid:'T3.3',en:'Transfer of Austrian best practice (Vienna)'},
+  {tid:'T4.1',en:'Technical criteria for suitable zones'},
+  {tid:'T4.2',en:'Building readiness assessment'},
+  {tid:'T4.3',en:'Harmonised LHCP template'},
+  {tid:'T5.1',en:'Multi-stakeholder co-creation workshops'},
+  {tid:'T5.2',en:'Mayoral deliberations / commitments'},
+  {tid:'T5.3',en:'Engagement of suppliers, DSOs & grid operators'},
+  {tid:'T6.1',en:'LHCP drafts per municipality'},
+  {tid:'T6.2',en:'Financing options identification per LHCP measure'},
+  {tid:'T6.3',en:'Integration of shallow geothermal into the plans'},
+  {tid:'T7.1',en:'Formal LHCP adoption (target 30-40)'},
+  {tid:'T7.2',en:'Permanent coordination hubs / task forces (3-5)'},
+  {tid:'T7.3',en:'Post-project governance model'},
+  {tid:'T8.1',en:'Replication toolkit'},
+  {tid:'T8.2',en:'LHCP processes launched in follower municipalities (10-20)'},
+  {tid:'T8.3',en:'Dissemination & communication plan'}
+];
+const BYIT=[
+  {it:'Project & financial management, CINEA reporting',en:'Project & financial management, CINEA reporting'},
+  {it:'Quality assurance & risk management',en:'Quality assurance & risk management'},
+  {it:'Consortium governance & coordination',en:'Consortium governance & coordination'},
+  {it:'Geospatial datasets comuni target',en:'Geospatial datasets for target municipalities'},
+  {it:'Mappe potenziale geotermico superficiale',en:'Shallow geothermal potential maps'},
+  {it:'Baseline territoriale per Paese',en:'Per-country territorial baseline'},
+  {it:'Metodologia di mappatura del potenziale (supply-demand)',en:'Potential mapping methodology (supply-demand)'},
+  {it:'Integrazione supply-side/RES nel layer di pianificazione',en:'Supply-side/RES integration into the planning layer'},
+  {it:'Trasferimento best practice austriaca (Vienna)',en:'Transfer of Austrian best practice (Vienna)'},
+  {it:'Criteri tecnici zone idonee',en:'Technical criteria for suitable zones'},
+  {it:'Building readiness assessment',en:'Building readiness assessment'},
+  {it:'Template LHCP armonizzato',en:'Harmonised LHCP template'},
+  {it:'Workshop co-creazione multi-stakeholder',en:'Multi-stakeholder co-creation workshops'},
+  {it:'Delibere / impegni dei Sindaci',en:'Mayoral deliberations / commitments'},
+  {it:'Engagement fornitori, DSO & gestori rete',en:'Engagement of suppliers, DSOs & grid operators'},
+  {it:'Bozze LHCP per comune',en:'LHCP drafts per municipality'},
+  {it:'Identificazione opzioni di finanziamento per misura LHCP',en:'Financing options identification per LHCP measure'},
+  {it:'Integrazione geotermia superficiale nei piani',en:'Integration of shallow geothermal into the plans'},
+  {it:'Adozione formale LHCP (target 30-40)',en:'Formal LHCP adoption (target 30-40)'},
+  {it:'Hub / task force di coordinamento permanenti (3-5)',en:'Permanent coordination hubs / task forces (3-5)'},
+  {it:'Governance model post-progetto',en:'Post-project governance model'},
+  {it:'Toolkit di replicazione',en:'Replication toolkit'},
+  {it:'Avvio processi LHCP in comuni follower (10-20)',en:'LHCP processes launched in follower municipalities (10-20)'},
+  {it:'Dissemination & communication plan',en:'Dissemination & communication plan'}
+];
+function norm(s){return (s||'').trim().toLowerCase().replace(/\s+/g,' ');}
+async function run(){
+  const btn=document.getElementById('run');btn.disabled=true;btn.textContent='Working...';logEl.innerHTML='';
+  try{
+    let {data:proj}=await sb.from('projects').select('id').eq('name','Keep Cool');
+    if(!proj||!proj.length)throw new Error('Keep Cool not found.');
+    const pid=proj[0].id;
+    // leggo TUTTI i task esistenti
+    let {data:tasks}=await sb.from('tasks').select('id,task_id,title,status').eq('project_id',pid);
+    tasks=tasks||[];
+    log('\u2713 '+tasks.length+' tasks found','ok');log('','');
+    // costruisco lookup
+    const byId={}; BYID.forEach(x=>byId[x.tid.toLowerCase()]=x.en);
+    const byIt={}; BYIT.forEach(x=>byIt[norm(x.it)]=x.en);
+    let fixed=0, already=0, statusFixed=0, nomatch=0;
+    for(const t of tasks){
+      let newTitle=null;
+      // 1) prova per task_id
+      if(t.task_id && byId[t.task_id.toLowerCase()]) newTitle=byId[t.task_id.toLowerCase()];
+      // 2) fallback per titolo italiano
+      if(!newTitle && byIt[norm(t.title)]) newTitle=byIt[norm(t.title)];
+      // 3) se il titolo attuale è già uno dei titoli EN, è già a posto
+      const enValues=Object.values(byId);
+      const alreadyEn = enValues.some(v=>norm(v)===norm(t.title));
+      const upd={};
+      if(newTitle && norm(newTitle)!==norm(t.title)){ upd.title=newTitle; }
+      else if(alreadyEn){ already++; }
+      else if(!newTitle){ log('  ? no match: '+(t.task_id||'?')+' \u201c'+t.title+'\u201d','hl'); nomatch++; }
+      // status nuovo → new
+      if(t.status==='nuovo'){ upd.status='new'; }
+      if(Object.keys(upd).length>0){
+        let r=await sb.from('tasks').update(upd).eq('id',t.id);
+        if(r.error){log('  ! '+(t.task_id||t.id)+': '+r.error.message,'err');}
+        else{
+          if(upd.title){log('  \u2713 '+(t.task_id||'?')+' \u2192 '+upd.title,'dim');fixed++;}
+          if(upd.status)statusFixed++;
+        }
+      }
+    }
+    log('','');
+    log('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','ok');
+    log('\u2713 '+fixed+' titles translated, '+already+' already EN','ok');
+    log('\u2713 '+statusFixed+' statuses set to \u201cnew\u201d',(statusFixed?'ok':'dim'));
+    if(nomatch)log('\u26a0 '+nomatch+' tasks had no match (listed above)','hl');
+    log('Reload HOLA with Ctrl+Shift+R.','ok');
+    log('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','ok');
+    btn.textContent='\u2713 Done';
+  }catch(e){log('\u2717 ERROR: '+(e.message||e),'err');btn.disabled=false;btn.textContent='Retry';}
+}
+</script></body></html>
